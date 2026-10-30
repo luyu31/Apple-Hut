@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.applehat.applehat'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.applehat.applehat"
+        minSdk 21
+        targetSdk 34
+        versionCode 12
+        versionName "1.9.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    // 纯 WebView 壳，不依赖任何 AndroidX
+}
