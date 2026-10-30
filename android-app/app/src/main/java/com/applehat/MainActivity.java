@@ -80,8 +80,6 @@ public class MainActivity extends Activity {
 
         // 保持常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        // 沉浸式
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         mWebView = new WebView(this);
 

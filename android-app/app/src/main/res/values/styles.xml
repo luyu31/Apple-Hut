@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AppleHat" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+    <!-- 不隐藏状态栏：系统栏用实色，避免全屏主题把上下两条染成黑色 -->
+    <style name="Theme.AppleHat" parent="@android:style/Theme.NoTitleBar">
         <item name="android:windowBackground">@drawable/splash_window</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:windowActionBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">#3A2A2A</item>
+        <item name="android:navigationBarColor">#3A2A2A</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
