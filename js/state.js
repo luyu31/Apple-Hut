@@ -38,16 +38,13 @@
         let customStatusGroups = [];
         let customMottos = [];
         let customIntros = [];
-        let customPeriodCare = [];  // 经期关心话术——氛围感配置里的新分类，不分组
         let currentMajorTab = 'reply'; 
         let currentSubTab = 'custom';  
         let currentReplyTab = 'custom';
         let customEmojis = [];
-        let anniversaries = [];
         let stickerLibrary = []; 
         let myStickerLibrary = [];
         let myStickerGroups = [];  // 我的表情库分组：{id, name, cover, createdAt}，归属关系存在每个表情条目自己的groupId上
-        let currentAnniversaryType = 'anniversary';
         let customThemes = [];
         let themeSchemes = []; 
         const DOMElements = {
@@ -149,26 +146,6 @@
                 avatar: document.getElementById('my-avatar'),
                 statusContainer: document.getElementById('my-status-container'),
                 statusText: document.getElementById('my-status-text')
-            },
-            anniversaryModal: {
-                modal: document.getElementById('anniversary-modal'),
-                closeBtn: document.getElementById('close-anniversary-modal'),
-                saveBtn: document.getElementById('save-ann-btn'),
-                addBtn: document.getElementById('open-ann-add-btn'),
-                dateInput: document.getElementById('ann-input-date'),
-                nameInput: document.getElementById('ann-input-name'),
-                displayArea: document.getElementById('anniversary-display'),
-                daysElement: document.getElementById('anniversary-days'),
-                dateShowElement: document.getElementById('anniversary-date-show'),
-                list: document.getElementById('ann-list-container'),
-                typeHint: document.getElementById('ann-type-desc')
-            },            
-            anniversaryAnimation: {
-                modal: document.getElementById('anniversary-animation'),
-                title: document.getElementById('anniversary-animation-title'),
-                days: document.getElementById('anniversary-animation-days'),
-                message: document.getElementById('anniversary-animation-message'),
-                closeBtn: document.getElementById('close-anniversary-animation')
             },
             appearanceModal: {
                 modal: document.getElementById('appearance-modal'),

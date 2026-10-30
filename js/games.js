@@ -2120,7 +2120,7 @@ function initComboMenu() {
             _myStickerBindCoverRefs(grid);
             // 不再单靠 CSS 撑高度——这个位置已经连着猜错两次了（aspect-ratio 不行、
             // button 上的百分比 padding 也不行），不再赌第三种 CSS 写法。
-            // 直接照抄电影院表情格子那套做法：量出格子实际渲染宽度，用 JS 把 height 钉成一样的数字，
+            // 量出格子实际渲染宽度，用 JS 把 height 钉成一样的数字，
             // 不管什么原因导致 CSS 那套技巧不生效，这里都会被直接摆平
             requestAnimationFrame(function () {
                 grid.querySelectorAll('.my-sticker-pick-item').forEach(function (el) {

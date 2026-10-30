@@ -153,13 +153,8 @@ function _renderListContentOnly() {
         else if (currentSubTab === 'statuses') itemsToRender = customStatuses;
         else if (currentSubTab === 'mottos') itemsToRender = customMottos;
         else if (currentSubTab === 'intros') itemsToRender = customIntros;
-        else if (currentSubTab === 'period') itemsToRender = customPeriodCare;
         else if (currentSubTab === 'surveyBank') {
             if (typeof window._surveyRenderBankTab === 'function') window._surveyRenderBankTab(list);
-            return;
-        }
-        else if (currentSubTab === 'redpacketBank') {
-            if (typeof window._redpacketRenderBankTab === 'function') window._redpacketRenderBankTab(list);
             return;
         }
     }
@@ -250,13 +245,8 @@ function renderReplyLibrary() {
         else if (currentSubTab === 'statuses') itemsToRender = customStatuses;
         else if (currentSubTab === 'mottos') itemsToRender = customMottos;
         else if (currentSubTab === 'intros') itemsToRender = customIntros;
-        else if (currentSubTab === 'period') itemsToRender = customPeriodCare;
         else if (currentSubTab === 'surveyBank') {
             if (typeof window._surveyRenderBankTab === 'function') window._surveyRenderBankTab(list);
-            return;
-        }
-        else if (currentSubTab === 'redpacketBank') {
-            if (typeof window._redpacketRenderBankTab === 'function') window._redpacketRenderBankTab(list);
             return;
         }
     }
@@ -283,7 +273,7 @@ function _renderModernToolbar() {
     let toolbar = document.getElementById('batch-ops-toolbar');
     // 问卷题库这个 tab 是自己单独一套渲染（对象结构，不是纯字符串数组），
     // 不走下面这套批量管理/分组/去重逻辑——那些都是照着字符串数组写的，硬塞进来只会出岔子
-    if (currentMajorTab === 'atmosphere' && (currentSubTab === 'surveyBank' || currentSubTab === 'redpacketBank')) {
+    if (currentMajorTab === 'atmosphere' && currentSubTab === 'surveyBank') {
         if (toolbar) toolbar.style.display = 'none';
         return;
     }
@@ -838,7 +828,6 @@ function _renderAtmosphereList(list, items) {
         statuses: new Map(customStatuses.map((r,i) => [r, i])),
         mottos:   new Map(customMottos.map((r,i)   => [r, i])),
         intros:   new Map(customIntros.map((r,i)   => [r, i])),
-        period:   new Map(customPeriodCare.map((r,i) => [r, i])),
     };
     const frag = document.createDocumentFragment();
     items.forEach((item, idx) => {
@@ -1019,8 +1008,6 @@ function _runDedup() {
     customMottos = cmDedup.result; totalRemoved += cmDedup.removedCount;
     const ciDedup = deduplicateContentArray(customIntros);
     customIntros = ciDedup.result; totalRemoved += ciDedup.removedCount;
-    const cpcDedup = deduplicateContentArray(customPeriodCare);
-    customPeriodCare = cpcDedup.result; totalRemoved += cpcDedup.removedCount;
     const preEmoji = customEmojis.length;
     customEmojis = [...new Set(customEmojis)];
     totalRemoved += (preEmoji - customEmojis.length);
@@ -1402,7 +1389,6 @@ function deleteItem(index) {
     else if (currentSubTab === 'statuses') customStatuses.splice(index, 1);
     else if (currentSubTab === 'mottos') customMottos.splice(index, 1);
     else if (currentSubTab === 'intros') customIntros.splice(index, 1);
-    else if (currentSubTab === 'period') customPeriodCare.splice(index, 1);
     if (item && ctx.groups) {
         ctx.groups.forEach(g => { if (g.items) g.items = g.items.filter(t => t !== item); });
     }
@@ -1436,7 +1422,6 @@ function editItem(index, oldText) {
     else if (currentSubTab === 'statuses') customStatuses[index] = newText.trim();
     else if (currentSubTab === 'mottos') customMottos[index] = newText.trim();
     else if (currentSubTab === 'intros') customIntros[index] = newText.trim();
-    else if (currentSubTab === 'period') customPeriodCare[index] = newText.trim();
     throttledSaveData();
     renderReplyLibrary();
 }
@@ -1467,7 +1452,6 @@ function _showExportUI() {
         { id: '_re_statuses', icon: ICONS.dot,       label: '对方状态',      count: customStatuses.length,                    key: 'customStatuses' },
         { id: '_re_mottos',   icon: ICONS.quote,     label: '顶部格言',      count: customMottos.length,                      key: 'customMottos' },
         { id: '_re_intros',   icon: ICONS.play,      label: '开场动画',      count: customIntros.length,                      key: 'customIntros' },
-        { id: '_re_period',   icon: ICONS.dot,       label: '经期关心话术',  count: customPeriodCare.length,                  key: 'customPeriodCare' },
         { id: '_re_emojis',   icon: ICONS.smile,     label: 'Emoji 库',      count: customEmojis.length,                      key: 'customEmojis' },
         { id: '_re_ann',      icon: ICONS.folderBig, label: '今日公告配置',  count: _annTotalCount,                           key: 'announcementConfig' },
         { id: '_re_groups',   icon: ICONS.folderBig, label: '字卡分组',      count: (customReplyGroups||[]).length,            key: 'customReplyGroups',  extra: true },
@@ -1587,7 +1571,6 @@ function _doExport(selectedModules) {
         else if (m.key === 'customStatuses')   { libraryData.customStatuses     = customStatuses;                 libraryData.modules.push('statuses'); }
         else if (m.key === 'customMottos')     { libraryData.customMottos       = customMottos;                   libraryData.modules.push('mottos'); }
         else if (m.key === 'customIntros')     { libraryData.customIntros       = customIntros;                   libraryData.modules.push('intros'); }
-        else if (m.key === 'customPeriodCare') { libraryData.customPeriodCare   = customPeriodCare;                libraryData.modules.push('period'); }
         else if (m.key === 'customEmojis')     { libraryData.customEmojis       = customEmojis;                   libraryData.modules.push('emojis'); }
         else if (m.key === 'customReplyGroups')  { libraryData.customReplyGroups  = window.customReplyGroups  || []; libraryData.modules.push('groups'); }
         else if (m.key === 'customPokeGroups')   { libraryData.customPokeGroups   = window.customPokeGroups   || []; libraryData.modules.push('pokeGroups'); }
@@ -1777,7 +1760,7 @@ function _parseFlexibleJSON(text) {
 
 function _normalizeImportData(data) {
     if (!data || typeof data !== 'object') return data;
-    const knownKeys = ['customReplies','customPokes','customStatuses','customMottos','customIntros','customEmojis','customPeriodCare',
+    const knownKeys = ['customReplies','customPokes','customStatuses','customMottos','customIntros','customEmojis',
                        'customReplyGroups','customPokeGroups','customStatusGroups','disabledDefaultReplies',
                        'announcementConfig','announcementText','announcementStatusPool'];
     const hasNewFormat = knownKeys.some(k => data[k] !== undefined && data[k] !== null);
@@ -1789,7 +1772,7 @@ function _normalizeImportData(data) {
 }
 
 function _showImportUI(data) {
-    const knownFields = ['customReplies','customPokes','customStatuses','customMottos','customIntros','customEmojis','customPeriodCare',
+    const knownFields = ['customReplies','customPokes','customStatuses','customMottos','customIntros','customEmojis',
                          'customReplyGroups','customPokeGroups','customStatusGroups',
                          'announcementConfig','announcementText','announcementStatusPool'];
     const hasValid = knownFields.some(f => data[f] !== undefined && data[f] !== null);
@@ -1811,7 +1794,6 @@ function _showImportUI(data) {
         { id: '_ri_statuses', icon: ICONS.dot,       label: '对方状态',      data: data.customStatuses,      key: 'customStatuses' },
         { id: '_ri_mottos',   icon: ICONS.quote,     label: '顶部格言',      data: data.customMottos,        key: 'customMottos' },
         { id: '_ri_intros',   icon: ICONS.play,      label: '开场动画',      data: data.customIntros,        key: 'customIntros' },
-        { id: '_ri_period',   icon: ICONS.dot,       label: '经期关心话术',  data: data.customPeriodCare,     key: 'customPeriodCare' },
         { id: '_ri_emojis',   icon: ICONS.smile,     label: 'Emoji 库',      data: data.customEmojis,        key: 'customEmojis' },
         { id: '_ri_ann',      icon: ICONS.folderBig, label: '今日公告配置',  data: [_annCfg],                key: 'announcementConfig',    displayCount: _annCfgCount },
         { id: '_ri_anntext',  icon: ICONS.comment,   label: '公告文案',      data: [_annText],               key: 'announcementText',      displayCount: _annTextCount },
@@ -1833,7 +1815,6 @@ function _showImportUI(data) {
                     else if (m.key === 'customStatuses')   { customStatuses              = data.customStatuses;      totalAdded += data.customStatuses.length; }
                     else if (m.key === 'customMottos')     { customMottos                = data.customMottos;        totalAdded += data.customMottos.length; }
                     else if (m.key === 'customIntros')     { customIntros                = data.customIntros;        totalAdded += data.customIntros.length; }
-                    else if (m.key === 'customPeriodCare') { customPeriodCare            = data.customPeriodCare;    totalAdded += data.customPeriodCare.length; }
                     else if (m.key === 'customEmojis')     { customEmojis                = data.customEmojis; }
                     else if (m.key === 'customReplyGroups')  { window.customReplyGroups  = data.customReplyGroups; }
                     else if (m.key === 'customPokeGroups')   { window.customPokeGroups   = data.customPokeGroups; }
@@ -1873,10 +1854,6 @@ function _showImportUI(data) {
                         const before = customIntros.length;
                         customIntros = deduplicateContentArray([...customIntros, ...data.customIntros]).result;
                         totalAdded += customIntros.length - before;
-                    } else if (m.key === 'customPeriodCare') {
-                        const before = customPeriodCare.length;
-                        customPeriodCare = deduplicateContentArray([...customPeriodCare, ...data.customPeriodCare]).result;
-                        totalAdded += customPeriodCare.length - before;
                     } else if (m.key === 'customEmojis') {
                         customEmojis = [...new Set([...customEmojis, ...data.customEmojis])];
                     } else if (m.key === 'customReplyGroups') {
@@ -2210,15 +2187,12 @@ function _showBatchAddDialog() {
                 ? customPokes.some(r => normalizeStringStrict(r) === norm)
                 : currentSubTab === 'statuses'
                 ? customStatuses.some(r => normalizeStringStrict(r) === norm)
-                : currentSubTab === 'period'
-                ? customPeriodCare.some(r => normalizeStringStrict(r) === norm)
                 : false;
             if (isDup) { skipped++; return; }
             if (currentSubTab === 'custom') { customReplies.push(val); newItems.push(val); }
             else if (currentSubTab === 'pokes') { customPokes.push(val); newItems.push(val); }
             else if (currentSubTab === 'statuses') { customStatuses.push(val); newItems.push(val); }
             else if (currentSubTab === 'mottos') customMottos.push(val);
-            else if (currentSubTab === 'period') customPeriodCare.push(val);
             added++;
         });
         if (_selectedGroupIdx >= 0 && newItems.length > 0 && groups) {
@@ -2374,10 +2348,6 @@ function initReplyLibraryListeners() {
                 if (typeof window._surveyShowBankBatchAddDialog === 'function') window._surveyShowBankBatchAddDialog();
                 return;
             }
-            if (currentSubTab === 'redpacketBank') {
-                if (typeof window._redpacketShowBankBatchAddDialog === 'function') window._redpacketShowBankBatchAddDialog();
-                return;
-            }
             let input;
             if (currentSubTab === 'intros') {
                 const l1 = prompt('请输入主标题 (如: 𝑳𝒐𝒗𝒆):');
@@ -2420,7 +2390,7 @@ function updateTabUI() {
 }
 
 function initRippleFeedback() {
-    const targets = ['.input-btn','.action-btn','.modal-btn','.settings-item','.batch-action-btn','.coin-btn-action','.import-export-btn','.reply-tab-btn','.anniversary-type-btn','.reply-tool-btn','.session-action-btn','.fav-action-btn'];
+    const targets = ['.input-btn','.action-btn','.modal-btn','.settings-item','.batch-action-btn','.coin-btn-action','.import-export-btn','.reply-tab-btn','.reply-tool-btn','.session-action-btn','.fav-action-btn'];
     document.addEventListener('mousedown', e => {
         const target = e.target.closest(targets.join(','));
         if (target) createRipple(e, target);

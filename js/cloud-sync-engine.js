@@ -52,41 +52,20 @@
         'envelopeData', 'pending_envelope',
         // 回复 / 氛围
         'customReplies', 'customPokes', 'customStatuses', 'customMottos',
-        'customIntros', 'customEmojis', 'customPeriodCare',
+        'customIntros', 'customEmojis',
         'customReplyGroups', 'customPokeGroups', 'customStatusGroups',
-        // 经期记录（日历标记、每日打卡、梦角留言状态）
-        'periodData',
         // 调查问卷（我问梦角/梦角问我，图片选项是 oss:// 引用或未配置OSS时的本地 base64，体积小）
         'surveyData',
-        // 红包（发送/接收记录、留言库、调度器状态——金额和祝福语都是纯文字，
-        // 之前这个键完全没在同步清单里，红包这块的文字数据一直没被云端同步覆盖到）
-        'redpacketData',
-        // 纪念日
-        'anniversaries', 'annCoverBg_', 'annMeetOverride', 'annPinnedId',
-        // 相册（相册列表/照片归属/收藏/回收站，图片本身是 oss:// 引用，体积小）
-        'albumData',
-        // 动态（贴文/评论/点赞，图片有清洗逻辑见下方 _collectTextData）
-        'momentsData',
-        // 电影院（约定/待看清单/观看历史/协商/梦角主动邀请，全是文字数字，没有图片）
-        '_cinemaAppt', '_cinemaWatchlist', '_cinemaHistory', '_cinemaNego', '_cinemaPartnerInvite',
-        // 情侣空间设置（等待延迟/是否保存对方图片，纯文字数字）
-        'csSpaceSettings',
-        // 情侣空间壁纸（当前壁纸 + 壁纸库，图片有清洗逻辑见下方 _collectTextData）
-        'csWallpaper', 'csWallpaperGallery',
         // 心情手账（不含图片）
         'moodCalendar', 'customMoodOptions', 'moodTrash',
         // 主题人设
         'partnerPersonas',
         // 贴纸库（文字索引，实际图片阶段三B处理）
         'stickerLibrary', 'myStickerLibrary', 'myStickerGroups',
-        // 陪伴日记文字
-        'companionData', 'companionDiary',
         // 信件
         'partnerLetterNextTime',
         // 阶段三A：背景图库（现在存的是 oss:// 引用 + 缩略图，可以同步）
         'backgroundGallery', 'chatBackground',
-        // 阶段三B：日记背景（同上，云端引用后可同步；有 payload 保护过滤 base64）
-        'companionDiaryBg', 'companionDiaryBgGallery',
         // 阶段四：收藏语音（值是 oss:// 引用，体积小可以同步；有 sanitize 过滤 base64）
         'favAudio_',
         // 头像（配置了云端、迁移过的话是 oss:// 引用，体积小可以同步；有 sanitize 过滤本地 base64，
@@ -286,36 +265,6 @@
                         payload.indexedDB[k] = v;
                         continue;
                     }
-                    // 阶段三B 保护：日记背景图库（对象数组，同 backgroundGallery 逻辑）
-                    // 注意：必须先判断 companionDiaryBgGallery（更长），再判断 companionDiaryBg，
-                    // 否则 companionDiaryBg 的 indexOf 会先命中 companionDiaryBgGallery 的键
-                    if (k.indexOf('companionDiaryBgGallery') !== -1 && Array.isArray(v)) {
-                        var sanitizedDiary = v.filter(function (bg) {
-                            if (!bg || typeof bg !== 'object') return true;
-                            if (typeof bg.value !== 'string') return true;
-                            if (bg.value.indexOf('oss://') === 0) return true;
-                            if (!bg.value.startsWith('data:image')) return true;
-                            return false;
-                        });
-                        sanitizedDiary = sanitizedDiary.map(function (bg) {
-                            if (!bg || typeof bg !== 'object') return bg;
-                            if (typeof bg.value === 'string' && bg.value.indexOf('data:image') === 0) {
-                                var copy = Object.assign({}, bg);
-                                if (bg.thumbnail) copy.value = bg.thumbnail;
-                                else return null;
-                                return copy;
-                            }
-                            return bg;
-                        }).filter(Boolean);
-                        payload.indexedDB[k] = sanitizedDiary;
-                        continue;
-                    }
-                    // 阶段三B 保护：日记单张背景（同 chatBackground 逻辑）
-                    if (k.indexOf('companionDiaryBg') !== -1 && !Array.isArray(v)) {
-                        if (typeof v === 'string' && v.indexOf('data:image') === 0) continue;
-                        payload.indexedDB[k] = v;
-                        continue;
-                    }
                     // 阶段三B 保护：贴纸库（字符串数组，元素可以是 base64 或 oss://）
                     // 过滤掉 base64 大图（避免 payload 爆炸），等迁移工具处理
                     if (k.indexOf('stickerLibrary') !== -1 && Array.isArray(v)) {
@@ -329,137 +278,12 @@
                         payload.indexedDB[k] = sanitizedStickers;
                         continue;
                     }
-                    // 红包（outbox/inbox 记录里可能挂了表情包）：金额/祝福语/状态这些纯文字全部同步，
-                    // sticker 字段跟贴纸库同一套过滤逻辑——oss://引用保留（体积小），
-                    // 本地base64跳过（换设备后这条记录就是没配表情包，不影响金额/祝福语这些主要信息）
-                    if (k.indexOf('redpacketData') !== -1 && v && typeof v === 'object') {
-                        var sanitizeRpList = function (list) {
-                            if (!Array.isArray(list)) return list;
-                            return list.map(function (r) {
-                                if (!r || typeof r !== 'object' || typeof r.sticker !== 'string') return r;
-                                if (r.sticker.indexOf('oss://') === 0) return r;
-                                if (r.sticker.indexOf('data:') === 0) {
-                                    var copy = Object.assign({}, r);
-                                    copy.sticker = null;
-                                    return copy;
-                                }
-                                return r;
-                            });
-                        };
-                        var sanitizedRp = Object.assign({}, v);
-                        if (Array.isArray(v.outbox)) sanitizedRp.outbox = sanitizeRpList(v.outbox);
-                        if (Array.isArray(v.inbox)) sanitizedRp.inbox = sanitizeRpList(v.inbox);
-                        payload.indexedDB[k] = sanitizedRp;
-                        continue;
-                    }
-                    // 阶段三B 保护：companionData（嵌套对象，递归过滤 base64 大数据）
-                    // backgrounds/voices/noises 里的 .data 字段可能是 base64，需要过滤
-                    if (k.indexOf('companionData') !== -1 && v && typeof v === 'object') {
-                        var sanitizeCompanionItems = function (items) {
-                            if (!Array.isArray(items)) return items;
-                            return items.map(function (item) {
-                                if (!item || typeof item !== 'object') return item;
-                                if (typeof item.data !== 'string') return item;
-                                // 是 oss:// 引用：保留
-                                if (item.data.indexOf('oss://') === 0) return item;
-                                // 是 base64：过滤掉 data 字段，保留元数据
-                                if (item.data.indexOf('data:') === 0) {
-                                    var copy = Object.assign({}, item);
-                                    delete copy.data; // 不上传 base64，换设备后需要迁移
-                                    return copy;
-                                }
-                                return item;
-                            });
-                        };
-                        var sanitizedCompanion = Object.assign({}, v);
-                        var modes = ['study', 'work', 'exercise', 'sleep'];
-                        ['backgrounds', 'voices', 'noises'].forEach(function (field) {
-                            if (sanitizedCompanion[field] && typeof sanitizedCompanion[field] === 'object') {
-                                var sanitizedField = {};
-                                modes.forEach(function (mode) {
-                                    sanitizedField[mode] = sanitizeCompanionItems(sanitizedCompanion[field][mode] || []);
-                                });
-                                sanitizedCompanion[field] = sanitizedField;
-                            }
-                        });
-                        payload.indexedDB[k] = sanitizedCompanion;
-                        continue;
-                    }
                     // 阶段四：收藏语音键（favAudio_）只同步 oss:// 引用，base64 跳过（太大）
                     if (k.indexOf('favAudio_') !== -1) {
                         if (typeof v === 'string' && v.indexOf('oss://') === 0) {
                             payload.indexedDB[k] = v; // oss:// 引用：允许同步
                         }
                         // base64 或其他格式：跳过（不进 payload）
-                        continue;
-                    }
-                    // 阶段五：动态（贴文配图 + 评论图片，可能是 base64 或 oss://）
-                    // 逻辑跟贴纸库一致：oss:// 引用正常同步，base64 大图跳过（等迁移工具处理），
-                    // 文字/点赞/评论文字等结构信息不受影响，一起同步
-                    if (k.indexOf('momentsData') !== -1 && v && typeof v === 'object' && Array.isArray(v.posts)) {
-                        var sanitizedMoments = Object.assign({}, v);
-                        sanitizedMoments.posts = v.posts.map(function (post) {
-                            if (!post || typeof post !== 'object') return post;
-                            var copyPost = Object.assign({}, post);
-                            if (Array.isArray(post.images)) {
-                                copyPost.images = post.images.filter(function (img) {
-                                    if (typeof img !== 'string') return true;
-                                    if (img.indexOf('oss://') === 0) return true;
-                                    if (img.indexOf('data:image') === 0) return false; // 跳过，等迁移
-                                    return true;
-                                });
-                            }
-                            if (Array.isArray(post.comments)) {
-                                copyPost.comments = post.comments.map(function (cmt) {
-                                    if (!cmt || typeof cmt !== 'object') return cmt;
-                                    if (typeof cmt.image === 'string' && cmt.image.indexOf('data:image') === 0) {
-                                        var copyCmt = Object.assign({}, cmt);
-                                        copyCmt.image = null; // base64 跳过，等迁移；文字/点赞不受影响
-                                        return copyCmt;
-                                    }
-                                    return cmt;
-                                });
-                            }
-                            return copyPost;
-                        });
-                        payload.indexedDB[k] = sanitizedMoments;
-                        continue;
-                    }
-                    // 阶段六：情侣空间壁纸库（同 backgroundGallery 逻辑：有云端引用换成 oss://，
-                    // 纯本地 base64 没有备份的用缩略图兜底，否则跳过）
-                    if (k.indexOf('csWallpaperGallery') !== -1 && Array.isArray(v)) {
-                        var sanitizedWallpaper = [];
-                        v.forEach(function (bg) {
-                            if (!bg || typeof bg !== 'object') { sanitizedWallpaper.push(bg); return; }
-                            if (typeof bg.value !== 'string' || (bg.value.indexOf('data:image') !== 0 && bg.value.indexOf('oss://') !== 0)) {
-                                sanitizedWallpaper.push(bg);
-                                return;
-                            }
-                            if (bg.value.indexOf('oss://') === 0) {
-                                sanitizedWallpaper.push(bg); // 已经是云端引用（新逻辑上传后的样子）
-                                return;
-                            }
-                            if (bg.cloudUrl && bg.cloudUrl.indexOf('oss://') === 0) {
-                                var wpCopy = Object.assign({}, bg);
-                                wpCopy.value = bg.cloudUrl;
-                                delete wpCopy.cloudUrl;
-                                sanitizedWallpaper.push(wpCopy);
-                                return;
-                            }
-                            // 纯本地 base64、还没搬完：缩略图兜底，否则跳过（等迁移工具处理）
-                            if (bg.thumbnail) {
-                                var wpCopy2 = Object.assign({}, bg);
-                                wpCopy2.value = bg.thumbnail;
-                                sanitizedWallpaper.push(wpCopy2);
-                            }
-                        });
-                        payload.indexedDB[k] = sanitizedWallpaper;
-                        continue;
-                    }
-                    // 阶段六：情侣空间当前壁纸（单值，同 chatBackground 逻辑）
-                    if (k.indexOf('csWallpaper') !== -1 && k.indexOf('csWallpaperGallery') === -1) {
-                        if (typeof v === 'string' && v.indexOf('data:image') === 0) continue; // base64 跳过，等迁移
-                        payload.indexedDB[k] = v;
                         continue;
                     }
                     payload.indexedDB[k] = v;

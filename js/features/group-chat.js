@@ -263,7 +263,7 @@ if (exportAllBtn) {
                     <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px;display:flex;align-items:center;gap:8px;">
                         <i class="fas fa-archive" style="color:var(--accent-color);font-size:14px;"></i>全量备份导出
                     </div>
-                    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">默认导出为 <strong>ZIP</strong>：<code style="font-size:11px;">backup.json</code> 仅存结构与引用，大图在 <code style="font-size:11px;">media/</code>，避免单文件 JSON 过大导致无法解析。<br><span style="display:inline-block;margin-top:6px;color:var(--accent-color);">✓ 陪伴数据、陪伴日记、所有图片素材已自动包含</span></div>
+                    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">默认导出为 <strong>ZIP</strong>：<code style="font-size:11px;">backup.json</code> 仅存结构与引用，大图在 <code style="font-size:11px;">media/</code>，避免单文件 JSON 过大导致无法解析。<br><span style="display:inline-block;margin-top:6px;color:var(--accent-color);">✓ 聊天数据、所有图片素材已自动包含</span></div>
                     <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px;">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);">
                             <input type="checkbox" id="_bk_msgs" checked style="accent-color:var(--accent-color);width:15px;height:15px;">
@@ -279,11 +279,6 @@ if (exportAllBtn) {
                             <input type="checkbox" id="_bk_custom" checked style="accent-color:var(--accent-color);width:15px;height:15px;">
                             <i class="fas fa-reply" style="color:var(--accent-color);width:16px;text-align:center;"></i>
                             <span>字卡 / 拍一拍 / 状态 / 格言</span>
-                        </label>
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);">
-                            <input type="checkbox" id="_bk_ann" checked style="accent-color:var(--accent-color);width:15px;height:15px;">
-                            <i class="fas fa-calendar-heart" style="color:var(--accent-color);width:16px;text-align:center;"></i>
-                            <span>纪念日 / 倒计时</span>
                         </label>
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);">
                             <input type="checkbox" id="_bk_themes" checked style="accent-color:var(--accent-color);width:15px;height:15px;">
@@ -320,12 +315,11 @@ if (exportAllBtn) {
                 const inclMsgs    = document.getElementById('_bk_msgs').checked;
                 const inclSet     = document.getElementById('_bk_settings').checked;
                 const inclCustom  = document.getElementById('_bk_custom').checked;
-                const inclAnn     = document.getElementById('_bk_ann').checked;
                 const inclThemes  = document.getElementById('_bk_themes').checked;
                 const inclDg      = document.getElementById('_bk_dg').checked;
                 const inclStickers = document.getElementById('_bk_stickers') && document.getElementById('_bk_stickers').checked;
 
-                if (!inclMsgs && !inclSet && !inclCustom && !inclAnn && !inclThemes && !inclDg && !inclStickers) {
+                if (!inclMsgs && !inclSet && !inclCustom && !inclThemes && !inclDg && !inclStickers) {
                     showNotification('请至少选择一项', 'error');
                     return;
                 }
@@ -337,7 +331,6 @@ if (exportAllBtn) {
                             inclMsgs: inclMsgs,
                             inclSet: inclSet,
                             inclCustom: inclCustom,
-                            inclAnn: inclAnn,
                             inclThemes: inclThemes,
                             inclDg: inclDg,
                             inclStickers: inclStickers
@@ -385,7 +378,7 @@ if (importAllBtn) {
                         backup.formatVersion === 5 ||
                         backup.localforage ||
                         backup.indexedDB;
-                    if (!okShape) throw new Error('不是有效的传讯备份文件');
+                    if (!okShape) throw new Error('不是有效的 Apple Hut 备份文件');
 
                     if (!confirm('导入全量备份将覆盖备份文件中包含的数据（按文件内容写入）。\n\nv5 ZIP：从 media/ 还原图片；v4 JSON：从 mediaStore 还原。\n\n确定继续吗？')) return;
 

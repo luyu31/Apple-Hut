@@ -72,7 +72,7 @@ function deduplicateContentArray(arr, baseSystemArray = []) {
                     const blob = new Blob([dataString], { type: 'application/json' });
                     const file = new File([blob], fileName, { type: 'application/json' });
                     if (navigator.canShare({ files: [file] })) {
-                        navigator.share({ files: [file], title: '传讯数据备份', text: '请选择"保存到文件"' })
+                        navigator.share({ files: [file], title: 'Apple Hut 数据备份', text: '请选择"保存到文件"' })
                             .catch(() => downloadFileFallback(blob, fileName));
                         return;
                     }
@@ -139,15 +139,11 @@ function deduplicateContentArray(arr, baseSystemArray = []) {
             stopCurrentSound();
 
             // =============== 邀请类音效（独立路径，播放 mp3 文件） ===============
-            const INVITE_TYPES = ['invite_study', 'invite_work', 'invite_exercise', 'invite_sleep', 'invite_videocall'];
+            const INVITE_TYPES = ['invite_videocall'];
             if (INVITE_TYPES.indexOf(type) !== -1) {
                 try {
-                    // 配置：每种邀请的预设 / 自定义 URL 设置 key
+                    // 配置：预设 / 自定义 URL 设置 key
                     const inviteKey = {
-                        invite_study:     { preset: 'inviteStudySoundPreset',     custom: 'inviteStudyCustomSoundUrl',     defaultFile: 'assets/audio/invite_study.mp3' },
-                        invite_work:      { preset: 'inviteWorkSoundPreset',      custom: 'inviteWorkCustomSoundUrl',      defaultFile: 'assets/audio/invite_work.mp3' },
-                        invite_exercise:  { preset: 'inviteExerciseSoundPreset',  custom: 'inviteExerciseCustomSoundUrl',  defaultFile: 'assets/audio/invite_exercise.mp3' },
-                        invite_sleep:     { preset: 'inviteSleepSoundPreset',     custom: 'inviteSleepCustomSoundUrl',     defaultFile: 'assets/audio/invite_sleep.mp3' },
                         invite_videocall: { preset: 'inviteVideocallSoundPreset', custom: 'inviteVideocallCustomSoundUrl', defaultFile: 'assets/audio/invite_videocall.mp3' }
                     }[type];
 
@@ -268,7 +264,6 @@ function deduplicateContentArray(arr, baseSystemArray = []) {
 
                     // 兼容其它旧声音类型（不走两方预设）
                     if (type === 'favorite') return { osc1Type: 'sine', osc2Type: 'sine', freq: 1200, dur: 0.18, up: 1.06, down: 0.70 };
-                    if (type === 'anniversary') return { osc1Type: 'sawtooth', osc2Type: 'triangle', freq: 660, dur: 0.22, up: 1.10, down: 0.62 };
                     if (type === 'mood') return { osc1Type: 'sine', osc2Type: 'square', freq: 440, dur: 0.16, up: 1.12, down: 0.60 };
                     if (type === 'import') return { osc1Type: 'square', osc2Type: 'triangle', freq: 330, dur: 0.16, up: 1.25, down: 0.70 };
                     if (type === 'export') return { osc1Type: 'triangle', osc2Type: 'sine', freq: 520, dur: 0.16, up: 1.15, down: 0.66 };
@@ -475,14 +470,14 @@ async function importAllData(file) {
         const categories = [
             {
                 id: 'chat',
-                label: '聊天记录 / 会话 / 红包',
-                indexedDBNeedles: ['chatMessages', 'sessionList', 'chatSettings', 'showPartnerNameInChat', 'envelopeData', 'pending_envelope', 'redpacketData'],
+                label: '聊天记录 / 会话',
+                indexedDBNeedles: ['chatMessages', 'sessionList', 'chatSettings', 'showPartnerNameInChat', 'envelopeData', 'pending_envelope'],
                 localStorageNeedles: ['groupChatSettings']
             },
             {
                 id: 'replies',
                 label: '回复 / 拍一拍 / 氛围',
-                indexedDBNeedles: ['customReplies', 'customPokes', 'customStatuses', 'customMottos', 'customIntros', 'customEmojis', 'customPeriodCare', 'customReplyGroups', 'customPokeGroups', 'customStatusGroups'],
+                indexedDBNeedles: ['customReplies', 'customPokes', 'customStatuses', 'customMottos', 'customIntros', 'customEmojis', 'customReplyGroups', 'customPokeGroups', 'customStatusGroups'],
                 localStorageNeedles: ['disabledReplyItems', 'pokeSym_my', 'pokeSym_partner', 'pokeSym_my_custom', 'pokeSym_partner_custom']
             },
             {
@@ -498,26 +493,14 @@ async function importAllData(file) {
                 localStorageNeedles: []
             },
             {
-                id: 'period',
-                label: '经期记录',
-                indexedDBNeedles: ['periodData'],
-                localStorageNeedles: []
-            },
-            {
                 id: 'survey',
                 label: '问卷（我问梦角 / 梦角问我 / 题库）',
                 indexedDBNeedles: ['surveyData'],
                 localStorageNeedles: []
             },
             {
-                id: 'ann',
-                label: '纪念日',
-                indexedDBNeedles: ['anniversaries', 'annCoverBg_', 'annMeetOverride', 'annPinnedId'],
-                localStorageNeedles: []
-            },
-            {
                 id: 'mood',
-                label: '心晴手账',
+                label: '心情手账',
                 indexedDBNeedles: ['moodCalendar', 'customMoodOptions', 'moodTrash'],
                 localStorageNeedles: []
             },
@@ -535,28 +518,10 @@ async function importAllData(file) {
                 localStoragePrefixes: ['customWeather_']
             },
             {
-                id: 'diary',
-                label: '陪伴模式（背景 / 语音 / 白噪音 / 日记）',
-                indexedDBNeedles: ['companionData', 'companionDiary', 'companionDiaryBg', 'companionDiaryBgGallery'],
-                localStorageNeedles: []
-            },
-            {
                 id: 'tts',
                 label: '真实语音配置',
                 indexedDBNeedles: ['favAudio_', '_favAudio_'],
                 localStorageNeedles: ['voiceTtsConfig']
-            },
-            {
-                id: 'moments',
-                label: '动态',
-                indexedDBNeedles: ['momentsData', 'csSpaceSettings', 'csWallpaper', 'csWallpaperGallery'],
-                localStorageNeedles: []
-            },
-            {
-                id: 'cinema',
-                label: '电影院',
-                indexedDBNeedles: ['_cinemaAppt', '_cinemaWatchlist', '_cinemaHistory', '_cinemaNego', '_cinemaPartnerInvite'],
-                localStorageNeedles: []
             }
         ];
 
