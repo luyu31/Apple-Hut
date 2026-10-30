@@ -58,7 +58,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
-        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+        android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
         android:hardwareAccelerated="true"
         android:largeHeap="true">
 
