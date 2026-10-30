@@ -1,5 +1,0 @@
-com.applehat.applehat:drawable/ic_launcher_foreground = 0x7f010001
-com.applehat.applehat:string/app_name = 0x7f030000
-com.applehat.applehat:mipmap/ic_launcher_round = 0x7f020001
-com.applehat.applehat:mipmap/ic_launcher = 0x7f020000
-com.applehat.applehat:drawable/ic_launcher_background = 0x7f010000

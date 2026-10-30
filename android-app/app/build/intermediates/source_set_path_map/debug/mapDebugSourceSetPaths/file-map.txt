@@ -1,7 +1,0 @@
-com.applehat.applehat.app-pngs-0 /workspace/android-app/app/build/generated/res/pngs/debug
-com.applehat.applehat.app-resValues-1 /workspace/android-app/app/build/generated/res/resValues/debug
-com.applehat.applehat.app-packageDebugResources-2 /workspace/android-app/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-com.applehat.applehat.app-packageDebugResources-3 /workspace/android-app/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-com.applehat.applehat.app-debug-4 /workspace/android-app/app/build/intermediates/merged_res/debug/mergeDebugResources
-com.applehat.applehat.app-debug-5 /workspace/android-app/app/src/debug/res
-com.applehat.applehat.app-main-6 /workspace/android-app/app/src/main/res
