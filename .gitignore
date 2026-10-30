@@ -4,6 +4,8 @@
 *.ap_
 *.dex
 *.class
+# 仅作为下载分发用的安装包
+!dist/AppleHut-1.9.5.apk
 *.log
 
 # ===== Gradle =====
