@@ -233,7 +233,7 @@ function loadMoreFuture() {
                 myStatus: "在线",
                 partnerStatus: "在线",
                 isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-                colorTheme: "gold",
+                colorTheme: "orange-blue",
                 soundEnabled: true,
                 typingIndicatorEnabled: true,
                 readReceiptsEnabled: true,
@@ -413,11 +413,25 @@ autoSendInterval: 5,
                 }
                 if (value.startsWith('linear-gradient') || value.startsWith('#') || value.startsWith('rgb')) {
                     document.documentElement.style.setProperty('--chat-bg-image', value);
+                    document.body.classList.add('with-background');
                 } else {
+                    // 图片类背景：先预加载，失败则回退为渐变，避免灰色破图遮罩
                     const cssValue = value.startsWith('url(') ? value : `url(${value})`;
-                    document.documentElement.style.setProperty('--chat-bg-image', cssValue);
+                    const imgUrl = value.startsWith('url(') ? value.slice(4, -1).replace(/['"]/g, '') : value;
+                    const probe = new Image();
+                    probe.onload = () => {
+                        document.documentElement.style.setProperty('--chat-bg-image', cssValue);
+                        document.body.classList.add('with-background');
+                    };
+                    probe.onerror = () => {
+                        // 加载失败：用柔和渐变兜底，并清除失效的保存值
+                        document.documentElement.style.setProperty('--chat-bg-image',
+                            'linear-gradient(160deg, rgba(255,122,61,0.06), rgba(74,144,217,0.08))');
+                        document.body.classList.add('with-background');
+                        console.warn('[bg] 背景图加载失败，已回退为渐变:', imgUrl);
+                    };
+                    probe.src = imgUrl;
                 }
-                document.body.classList.add('with-background');
             } catch (e) {
                 if (typeof removeBackground === 'function') removeBackground();
             }
@@ -1024,7 +1038,7 @@ function manageAutoSendTimer() {
                 if (theme) {
                     applyTheme(theme.colors);
                 } else {
-                    DOMElements.html.setAttribute('data-color-theme', 'gold');
+                    DOMElements.html.setAttribute('data-color-theme', 'orange-blue');
                 }
             } else {
                 DOMElements.html.setAttribute('data-color-theme', settings.colorTheme);
@@ -1037,7 +1051,7 @@ function manageAutoSendTimer() {
                 }
             }
 
-            DOMElements.html.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            DOMElements.html.setAttribute('data-theme', settings.isDarkMode ? 'dark' : 'light');
             DOMElements.partner.name.textContent = settings.partnerName;
             DOMElements.me.name.textContent = settings.myName;
             DOMElements.partner.status.textContent = settings.partnerStatus || '在线';

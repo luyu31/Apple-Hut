@@ -102,6 +102,30 @@
             --accent-color-dark: #2E5B9A;
             --accent-color-rgb: 74, 144, 226;
         }
+        /* 橙蓝主题：橙色为主强调（我方气泡/发送按钮），蓝色为辅（对方气泡/顶栏） */
+        :root[data-color-theme="orange-blue"] {
+            --accent-color: #FF7A3D;
+            --accent-color-dark: #E56A2E;
+            --accent-color-rgb: 255, 122, 61;
+            --message-sent-bg: #FF7A3D;
+            --message-sent-text: #ffffff;
+            --message-received-bg: #E8F4FD;
+            --message-received-text: #1a2a3a;
+            --header-bg: #4A90D9;
+            --input-area-bg: #F5FAFF;
+            --primary-bg: #F0F6FC;
+            --secondary-bg: #ffffff;
+            --border-color: #D6E8F5;
+            --text-primary: #1a2a3a;
+            --text-secondary: #6B7C8E;
+            --primary-bg-rgb: 240, 246, 252;
+            --secondary-bg-rgb: 255, 255, 255;
+            --toolbar-btn-bg: #E8F4FD;
+            --toolbar-btn-color: #4A90D9;
+            --send-btn-bg: #FF7A3D;
+            --send-btn-icon-color: #ffffff;
+            --timestamp-color: #8AA0B5;
+        }
 
 
         html[data-theme="dark"] {
@@ -138,6 +162,44 @@
         }
         html[data-theme="dark"][data-color-theme="pink"] {
             --message-sent-text: #2a0a10;
+        }
+        html[data-theme="dark"][data-color-theme="orange-blue"] {
+            --accent-color: #FF8C5A;
+            --accent-color-dark: #FF7A3D;
+            --accent-color-rgb: 255, 140, 90;
+            --message-sent-bg: #FF7A3D;
+            --message-sent-text: #ffffff;
+            --message-received-bg: #1E3A52;
+            --message-received-text: #E0EEF9;
+            --header-bg: #1E3A52;
+            --input-area-bg: #162636;
+            --primary-bg: #0F1A26;
+            --secondary-bg: #162636;
+            --border-color: #2A4055;
+            --primary-bg-rgb: 15, 26, 38;
+            --secondary-bg-rgb: 22, 38, 54;
+            --toolbar-btn-bg: #1E3A52;
+            --toolbar-btn-color: #6BA8E8;
+            --send-btn-bg: #FF7A3D;
+            --send-btn-icon-color: #ffffff;
+            --timestamp-color: #5A7A96;
+        }
+
+        /* 橙蓝主题：顶栏为蓝色，文字/图标统一用白色保证可读性 */
+        :root[data-color-theme="orange-blue"] .header .username,
+        :root[data-color-theme="orange-blue"] .header .status,
+        :root[data-color-theme="orange-blue"] .header i,
+        :root[data-color-theme="orange-blue"] .header .header-action-btn {
+            color: #ffffff;
+        }
+        :root[data-color-theme="orange-blue"] .header .username:hover {
+            color: #FFE0CC;
+        }
+        :root[data-color-theme="orange-blue"] .header .status:hover {
+            background-color: rgba(255,255,255,0.18);
+        }
+        :root[data-color-theme="orange-blue"] .header {
+            border-bottom-color: rgba(255,255,255,0.15);
         }
 
 
@@ -1391,7 +1453,7 @@
             background-color: var(--send-btn-bg, var(--accent-color-dark));
         }
 
-        .coin-btn, .batch-btn, .continue-btn, .attachment-btn, .poke-btn, .combo-btn {
+        .coin-btn, .batch-btn, .continue-btn, .attachment-btn, .poke-btn, .combo-btn, .more-menu-btn {
             background-color: var(--toolbar-btn-bg, var(--message-received-bg));
             color: var(--toolbar-btn-color, var(--text-secondary));
         }
@@ -4059,6 +4121,9 @@
         }
         #theme-ocean {
             background: linear-gradient(135deg, #4A90E2, #2E5B9A);
+        }
+        #theme-orange-blue {
+            background: linear-gradient(135deg, #FF7A3D 50%, #4A90D9 50%);
         }
 
         .font-size-control {

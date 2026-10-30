@@ -7,6 +7,7 @@
 # 仅作为下载分发用的安装包
 !dist/AppleHut-1.9.5.apk
 !dist/AppleHut-1.9.6.apk
+!dist/AppleHut-1.9.7.apk
 *.log
 
 # ===== Gradle =====

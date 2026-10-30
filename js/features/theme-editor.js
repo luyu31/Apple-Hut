@@ -463,7 +463,7 @@ function initThemeEditor() {
             }
             if (confirm(`确定要删除主题 "${selector.options[selector.selectedIndex].text}" 吗？`)) {
                 customThemes = customThemes.filter(t => t.id !== selectedId);
-                settings.colorTheme = 'gold'; 
+                settings.colorTheme = 'orange-blue'; 
                 saveCustomThemes();
                 updateUI();
                 populateThemeSelector();
@@ -507,6 +507,7 @@ function populateThemeSelector() {
         }
 
         const THEME_COLOR_NAMES = {
+            'orange-blue': '橙蓝',
             'gold': '金色', 'blue': '蓝色', 'purple': '紫色', 'green': '绿色',
             'pink': '粉色', 'black-white': '黑白', 'pastel': '柔蓝', 
             'sunset': '夕阳', 'forest': '森林', 'ocean': '深蓝'
@@ -626,6 +627,7 @@ function populateThemeSelector() {
 
         function getSchemePreviewColors(scheme) {
             const colorMap = {
+                'orange-blue': ['#FF7A3D', '#E8F4FD', '#4A90D9'],
                 gold: ['#c5a47e', '#f5f5f5', '#333333'],
                 blue: ['#7FA6CD', '#e8f0f8', '#333333'],
                 purple: ['#BB9EC7', '#f3eef7', '#333333'],
