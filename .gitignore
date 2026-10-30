@@ -1,0 +1,39 @@
+# ===== 构建产物 =====
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.log
+
+# ===== Gradle =====
+.gradle/
+build/
+**/build/
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+!gradle-wrapper.jar
+
+# ===== Android 本地配置 =====
+local.properties
+*.iml
+.idea/
+.appsettings/
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+.Trashes
+
+# ===== 编辑器 =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== 签名（永远不要提交）=====
+*.keystore
+*.jks
+*.p12
+*.pem

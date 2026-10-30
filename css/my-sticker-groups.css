@@ -155,7 +155,7 @@
     background: var(--primary-bg);
 }
 /* aspect-ratio:1 在网格里跟自动行高计算会冲突，格子实际渲染高度算错，
-   缩略图就会超出自己的格子、跟上下行叠在一起——项目里其他地方（styles.css/cinema.css）
+   缩略图就会超出自己的格子、跟上下行叠在一起——项目里其他地方（styles.css）
    都是用百分比 padding 撑高度绕开这个坑，这里之前漏了，改成同样的写法 */
 .my-sticker-pick-item::before {
     content: '';

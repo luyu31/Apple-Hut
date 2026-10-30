@@ -182,8 +182,7 @@
         if (!flags.inclThemes) p.push('backgroundGallery', 'chatBackground', 'partnerAvatar', 'myAvatar', 'playerCover');
         if (!flags.inclMsgs) p.push('chatMessages');
         if (!flags.inclSet) p.push('chatSettings', 'partnerPersonas', 'showPartnerNameInChat');
-        if (!flags.inclCustom) p.push('customReplies', 'customPokes', 'customStatuses', 'customMottos', 'customIntros', 'customEmojis', 'customPeriodCare', 'customReplyGroups', 'customPokeGroups', 'customStatusGroups');
-        if (!flags.inclAnn) p.push('anniversaries');
+        if (!flags.inclCustom) p.push('customReplies', 'customPokes', 'customStatuses', 'customMottos', 'customIntros', 'customEmojis', 'customReplyGroups', 'customPokeGroups', 'customStatusGroups');
         if (!flags.inclThemes) p.push('customThemes', 'themeSchemes');
         if (!flags.inclDg) p.push('dg_custom_data', 'dg_status_pool', 'weekly_fortune', 'daily_fortune', 'customWeather_');
         return p;
@@ -191,7 +190,6 @@
 
     function shouldSkipKeyGroupChat(key, flags) {
         if (!key) return true;
-        if (key.startsWith('annHeaderBg_')) return true;
         if (key.indexOf('dg_header_bg') !== -1 || key.indexOf('dg_overlay_bg') !== -1) return true;
         var patterns = buildModuleSkipPatterns(flags || {});
         return patterns.some(function (p) { return key.indexOf(p) !== -1; });
@@ -202,7 +200,7 @@
      */
     async function buildBackupPayload(flags) {
         flags = flags || {
-            inclMsgs: true, inclSet: true, inclCustom: true, inclAnn: true,
+            inclMsgs: true, inclSet: true, inclCustom: true,
             inclThemes: true, inclDg: true, inclStickers: false
         };
         var lfData = {};
@@ -238,7 +236,7 @@
         return {
             type: 'chatapp-backup-v4',
             formatVersion: 4,
-            appName: 'ChatApp',
+            appName: 'Apple Hut',
             timestamp: new Date().toISOString(),
             sessionId: typeof SESSION_ID !== 'undefined' ? SESSION_ID : null,
             appPrefix: typeof APP_PREFIX !== 'undefined' ? APP_PREFIX : 'CHAT_APP_V3_',
@@ -358,7 +356,7 @@
                 var jsonBody = {
                     type: 'chatapp-backup-v5',
                     formatVersion: 5,
-                    appName: payload.appName || 'ChatApp',
+                    appName: payload.appName || 'Apple Hut',
                     timestamp: payload.timestamp,
                     sessionId: payload.sessionId,
                     appPrefix: payload.appPrefix,
@@ -379,7 +377,7 @@
                         if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
                             await navigator.share({
                                 files: [shareFile],
-                                title: '传讯全量备份',
+                                title: 'Apple Hut 全量备份',
                                 text: 'ZIP 备份：' + new Date().toLocaleDateString()
                             });
                             if (typeof showNotification === 'function') showNotification('备份导出成功', 'success');
@@ -409,7 +407,7 @@
             try {
                 var f = new File([blob], fileName, { type: 'application/json' });
                 if (navigator.canShare && navigator.canShare({ files: [f] })) {
-                    await navigator.share({ files: [f], title: '传讯全量备份', text: '备份日期：' + new Date().toLocaleDateString() });
+                    await navigator.share({ files: [f], title: 'Apple Hut 全量备份', text: '备份日期：' + new Date().toLocaleDateString() });
                     if (typeof showNotification === 'function') showNotification('备份导出成功', 'success');
                     return;
                 }

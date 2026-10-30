@@ -9,7 +9,6 @@ function setupEventListeners() {
         setupTutorialListeners();
         initMoodListeners();
         initDecisionModule(); 
-        initAnniversaryModule(); 
         initThemeEditor(); 
         initThemeSchemes();
         
@@ -90,7 +89,7 @@ function initChatActionListeners() {
             });
 
             // ── 点一下气泡上的反应小标签直接撤回（方案A）──────────────────────
-            // 反应标签是贴在气泡外面那层 .message-bubble-wrap 上的（跟语音条/红包/图片/表情包
+            // 反应标签是贴在气泡外面那层 .message-bubble-wrap 上的（跟语音条/图片/表情包
             // 不是同一个节点、也不是它们的子节点），所以这里不会跟那些气泡自己的点击逻辑冲突；
             // 多加一道 stopPropagation 纯粹是保险，防止以后别处加了更上层的点击监听
             DOMElements.chatContainer.addEventListener('click', (e) => {
@@ -713,15 +712,7 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
     setSelect('sound-partner-poke-preset', settings.partnerPokeSoundPreset || 'tone_low');
     setSoundUrlInput('sound-partner-poke-custom-url', (settings.partnerPokeCustomSoundUrl || '').trim() || legacyCustom);
 
-    // 邀请音效（5 项）
-    setSelect('sound-invite-study-preset', settings.inviteStudySoundPreset || 'default');
-    setSoundUrlInput('sound-invite-study-custom-url', settings.inviteStudyCustomSoundUrl || '');
-    setSelect('sound-invite-work-preset', settings.inviteWorkSoundPreset || 'default');
-    setSoundUrlInput('sound-invite-work-custom-url', settings.inviteWorkCustomSoundUrl || '');
-    setSelect('sound-invite-exercise-preset', settings.inviteExerciseSoundPreset || 'default');
-    setSoundUrlInput('sound-invite-exercise-custom-url', settings.inviteExerciseCustomSoundUrl || '');
-    setSelect('sound-invite-sleep-preset', settings.inviteSleepSoundPreset || 'default');
-    setSoundUrlInput('sound-invite-sleep-custom-url', settings.inviteSleepCustomSoundUrl || '');
+    // 邀请音效（视频通话）
     setSelect('sound-invite-videocall-preset', settings.inviteVideocallSoundPreset || 'default');
     setSoundUrlInput('sound-invite-videocall-custom-url', settings.inviteVideocallCustomSoundUrl || '');
     document.querySelectorAll('.time-fmt-opt').forEach(opt => {
@@ -1327,10 +1318,6 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
             bindPresetSelect('sound-partner-message-preset', 'partnerMessageSoundPreset');
             bindPresetSelect('sound-my-poke-preset', 'myPokeSoundPreset');
             bindPresetSelect('sound-partner-poke-preset', 'partnerPokeSoundPreset');
-            bindPresetSelect('sound-invite-study-preset', 'inviteStudySoundPreset');
-            bindPresetSelect('sound-invite-work-preset', 'inviteWorkSoundPreset');
-            bindPresetSelect('sound-invite-exercise-preset', 'inviteExerciseSoundPreset');
-            bindPresetSelect('sound-invite-sleep-preset', 'inviteSleepSoundPreset');
             bindPresetSelect('sound-invite-videocall-preset', 'inviteVideocallSoundPreset');
 
             const bindCustomUrlInput = (inputId, settingsKey) => {
@@ -1350,10 +1337,6 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
             bindCustomUrlInput('sound-partner-message-custom-url', 'partnerMessageCustomSoundUrl');
             bindCustomUrlInput('sound-my-poke-custom-url', 'myPokeCustomSoundUrl');
             bindCustomUrlInput('sound-partner-poke-custom-url', 'partnerPokeCustomSoundUrl');
-            bindCustomUrlInput('sound-invite-study-custom-url', 'inviteStudyCustomSoundUrl');
-            bindCustomUrlInput('sound-invite-work-custom-url', 'inviteWorkCustomSoundUrl');
-            bindCustomUrlInput('sound-invite-exercise-custom-url', 'inviteExerciseCustomSoundUrl');
-            bindCustomUrlInput('sound-invite-sleep-custom-url', 'inviteSleepCustomSoundUrl');
             bindCustomUrlInput('sound-invite-videocall-custom-url', 'inviteVideocallCustomSoundUrl');
 
             // 本地音频文件上传
@@ -1387,10 +1370,6 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
             bindAudioUpload('upload-sound-partner-message-btn', 'upload-sound-partner-message-file', 'sound-partner-message-custom-url', 'partnerMessageCustomSoundUrl', 'sound-partner-message-preset');
             bindAudioUpload('upload-sound-my-poke-btn', 'upload-sound-my-poke-file', 'sound-my-poke-custom-url', 'myPokeCustomSoundUrl', 'sound-my-poke-preset');
             bindAudioUpload('upload-sound-partner-poke-btn', 'upload-sound-partner-poke-file', 'sound-partner-poke-custom-url', 'partnerPokeCustomSoundUrl', 'sound-partner-poke-preset');
-            bindAudioUpload('upload-sound-invite-study-btn', 'upload-sound-invite-study-file', 'sound-invite-study-custom-url', 'inviteStudyCustomSoundUrl', 'sound-invite-study-preset');
-            bindAudioUpload('upload-sound-invite-work-btn', 'upload-sound-invite-work-file', 'sound-invite-work-custom-url', 'inviteWorkCustomSoundUrl', 'sound-invite-work-preset');
-            bindAudioUpload('upload-sound-invite-exercise-btn', 'upload-sound-invite-exercise-file', 'sound-invite-exercise-custom-url', 'inviteExerciseCustomSoundUrl', 'sound-invite-exercise-preset');
-            bindAudioUpload('upload-sound-invite-sleep-btn', 'upload-sound-invite-sleep-file', 'sound-invite-sleep-custom-url', 'inviteSleepCustomSoundUrl', 'sound-invite-sleep-preset');
             bindAudioUpload('upload-sound-invite-videocall-btn', 'upload-sound-invite-videocall-file', 'sound-invite-videocall-custom-url', 'inviteVideocallCustomSoundUrl', 'sound-invite-videocall-preset');
 
             const btnMySend = document.getElementById('test-sound-my-send-btn');
@@ -1407,10 +1386,6 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
 
             // 邀请音效试听按钮：再次点击暂停 + 不循环（关闭弹窗也会停止，见下方监听）
             const inviteSoundTests = [
-                ['test-sound-invite-study-btn', 'invite_study'],
-                ['test-sound-invite-work-btn', 'invite_work'],
-                ['test-sound-invite-exercise-btn', 'invite_exercise'],
-                ['test-sound-invite-sleep-btn', 'invite_sleep'],
                 ['test-sound-invite-videocall-btn', 'invite_videocall']
             ];
             // 记录当前哪个邀请音效正在试听
@@ -1459,7 +1434,6 @@ if (_chatSettingsEl) _chatSettingsEl.addEventListener('click', () => {
                 window.hideAppearancePanel && window.hideAppearancePanel();
                 renderBackgroundGallery();
                 renderThemeSchemesList();
-                if (typeof window.renderDiaryBgGallery === 'function') window.renderDiaryBgGallery();
                 
                 const fontSizeSliderEl = document.getElementById('font-size-slider');
                 const fontSizeValueEl = document.getElementById('font-size-value');
@@ -1659,15 +1633,6 @@ autoSendSlider.addEventListener('change', () => {
 
 
         function initNewFeatureListeners() {
-            const periodEntry = document.getElementById('period-function');
-            if (periodEntry) {
-                periodEntry.addEventListener('click', () => {
-                    hideModal(DOMElements.advancedModal.modal);
-                    showModal(document.getElementById('period-modal'));
-                    if (typeof window._pdInit === 'function') window._pdInit();
-                });
-            }
-
             // Step 2：入口改成先打开历史列表页，"+"里再选"问梦角"打开创建弹窗
             const surveyEntry = document.getElementById('survey-function');
             if (surveyEntry) {
@@ -1744,12 +1709,6 @@ if (_cancelEnvEl) _cancelEnvEl.addEventListener('click', () => {
             });
 
             initReplyLibraryListeners();
-
-
-            
-            DOMElements.anniversaryAnimation.closeBtn.addEventListener('click', () => {
-                DOMElements.anniversaryAnimation.modal.classList.remove('active');
-            });
 
 
             const _statsFuncEl = document.getElementById('stats-function');

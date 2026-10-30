@@ -741,7 +741,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
 
     function showIncomingCall() {
         if (!S.enabled || S.active) return;
-        if (typeof window._cinemaShouldBlockInterruptions === 'function' && window._cinemaShouldBlockInterruptions()) return; // 观影中/快到观影时间不弹通话邀请
+        if (false) return; // 观影中/快到观影时间不弹通话邀请
         const ov = document.getElementById('call-incoming-overlay');
         if (!ov) return;
         fillAv('call-inc-avatar'); fillNm('call-inc-name');
@@ -794,7 +794,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
     }
 
     function scheduleRandomCall() {
-        // v2.5: 随机来电已合并到 companion.js 统一调度（50% 陪伴邀请 / 50% 通话）
+        // v2.5: 随机来电统一调度已停用
         // 这里禁用,避免重复触发
         clearTimeout(S.randomCallTimer);
         return;
@@ -1026,7 +1026,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
 
     init();
 
-    // v2.5: 暴露给 companion.js 用于统一来电调度
+    // 暴露给外部模块用于统一来电调度
     window._callModule = {
         showIncomingCall: () => {
             if (S.enabled && !S.active) showIncomingCall();

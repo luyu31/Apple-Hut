@@ -305,7 +305,7 @@
                 if (isCloudConnected) {
                     notice.innerHTML = '<div style="margin:12px 0 4px;padding:10px 12px;background:rgba(197,164,126,0.12);border:1px solid rgba(197,164,126,0.35);border-radius:10px;font-size:12px;color:var(--text-secondary);line-height:1.6;">'
                         + '<i class="fas fa-circle-info" style="color:var(--accent-color);margin-right:5px;"></i>'
-                        + '已启用云端存储：全量备份<b>不包含</b>背景图、表情包、聊天图片、收藏语音等媒体文件，这些文件仅存储在云端。文字类数据（聊天记录、字卡回复库、陪伴日记、心情手账、纪念日/倒计时、主题配色）可通过「聊天记录 → 选择导出」单独备份。'
+                        + '已启用云端存储：全量备份<b>不包含</b>背景图、表情包、聊天图片、收藏语音等媒体文件，这些文件仅存储在云端。文字类数据（聊天记录、字卡回复库、心情手账、主题配色）可通过「聊天记录 → 选择导出」单独备份。'
                         + '</div>';
                 } else {
                     notice.innerHTML = '';
@@ -528,7 +528,7 @@ window._sendPartnerNotification = function(title, body) {
         if (!('Notification' in window)) return;
         if (Notification.permission !== 'granted') return;
         if (!document.hidden) return;
-        new Notification(title || '传讯', {
+        new Notification(title || 'Apple Hut', {
             body: body || '对方发来了消息',
             icon: (document.querySelector('#partner-avatar img') || {}).src,
             tag: 'partner-msg',
@@ -549,7 +549,7 @@ window.handleNotifToggle = function(checkbox) {
             if (perm === 'granted') {
                 if (statusEl) statusEl.textContent = '✅ 已开启 — 当页面在后台时，收到消息会弹出系统通知';
                 localStorage.setItem('notifEnabled', '1');
-                try { new Notification('传讯通知已开启 ✨', { body: '你现在可以在后台收到消息提醒了', tag: 'notif-test' }); } catch(e) {}
+                try { new Notification('Apple Hut 通知已开启 ✨', { body: '你现在可以在后台收到消息提醒了', tag: 'notif-test' }); } catch(e) {}
             } else if (perm === 'denied') {
                 checkbox.checked = false;
                 if (statusEl) statusEl.textContent = '❌ 权限被拒绝，请自行搜索如何开启';

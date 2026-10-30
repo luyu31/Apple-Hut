@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Apple body -->
+    <item
+        android:width="180dp"
+        android:height="180dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="#ffffff" />
+        </shape>
+    </item>
+    <!-- Stem (top) -->
+    <item
+        android:width="16dp"
+        android:height="28dp"
+        android:gravity="top|center_horizontal"
+        android:top="20dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#556B2F" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+    <!-- Leaf -->
+    <item
+        android:width="30dp"
+        android:height="14dp"
+        android:gravity="top|center_horizontal"
+        android:top="32dp"
+        android:left="110dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#7BC8A4" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,8 +1,7 @@
 /*核心应用逻辑：数据加载保存、消息渲染、会话管理等*/
 
-// 梦角回复消息的多监听通道（跟 window._onPartnerMessage 单函数钩子并行，互不覆盖）
-// 需要监听"梦角发了消息"这个事件的新模块，用 window._registerPartnerMessageListener(fn) 注册，
-// 不要直接赋值 window._onPartnerMessage，那个是给旧模块（陪伴模块）用的，赋值会覆盖掉它。
+// 梦角回复消息的多监听通道（供消息横条等模块注册，互不覆盖）
+// 需要监听"梦角发了消息"这个事件的新模块，用 window._registerPartnerMessageListener(fn) 注册。
 window._partnerMessageListeners = window._partnerMessageListeners || [];
 window._registerPartnerMessageListener = window._registerPartnerMessageListener || function (fn) {
     if (typeof fn === 'function') window._partnerMessageListeners.push(fn);
@@ -439,7 +438,6 @@ const loadData = async () => {
             localforage.getItem(getStorageKey('customStatuses')),
             localforage.getItem(getStorageKey('customMottos')),
             localforage.getItem(getStorageKey('customIntros')),
-            localforage.getItem(getStorageKey('anniversaries')),
             localforage.getItem(getStorageKey('stickerLibrary')),
             localforage.getItem(`${APP_PREFIX}customThemes`),
             localforage.getItem(getStorageKey('chatBackground')),
@@ -452,7 +450,6 @@ const loadData = async () => {
             localforage.getItem(getStorageKey('customReplyGroups')),
             localforage.getItem(getStorageKey('customPokeGroups')),
             localforage.getItem(getStorageKey('customStatusGroups')),
-            localforage.getItem(getStorageKey('customPeriodCare')),
             localforage.getItem(getStorageKey('myStickerGroups'))
         ]);
         const getVal = (index) => results[index].status === 'fulfilled' ? results[index].value : null;
@@ -465,21 +462,19 @@ const loadData = async () => {
         const savedStatuses = getVal(5);
         const savedMottos = getVal(6);
         const savedIntros = getVal(7);
-        const savedAnniversaries = getVal(8);
-        const savedStickers = getVal(9);
-        const savedCustomThemes = getVal(10);
-        const savedChatBg = getVal(11);
-        const partnerAvatarSrc = getVal(12);
-        const myAvatarSrc = getVal(13);
-        const savedPartnerPersonas = getVal(14);
-        const savedShowNameConfig = getVal(15);
-        const savedThemeSchemes = getVal(16);
-        const savedMyStickers = getVal(17);
-        const savedReplyGroups = getVal(18);
-        const savedPokeGroups = getVal(19);
-        const savedStatusGroups = getVal(20);
-        const savedPeriodCare = getVal(21);
-        const savedMyStickerGroups = getVal(22);
+        const savedStickers = getVal(8);
+        const savedCustomThemes = getVal(9);
+        const savedChatBg = getVal(10);
+        const partnerAvatarSrc = getVal(11);
+        const myAvatarSrc = getVal(12);
+        const savedPartnerPersonas = getVal(13);
+        const savedShowNameConfig = getVal(14);
+        const savedThemeSchemes = getVal(15);
+        const savedMyStickers = getVal(16);
+        const savedReplyGroups = getVal(17);
+        const savedPokeGroups = getVal(18);
+        const savedStatusGroups = getVal(19);
+        const savedMyStickerGroups = getVal(20);
 
         if (savedPartnerPersonas) partnerPersonas = savedPartnerPersonas;
 
@@ -509,8 +504,6 @@ const loadData = async () => {
         if (savedIntros) customIntros = savedIntros;
         else customIntros = CONSTANTS.WELCOME_ANIMATIONS.map(a => `${a.line1}|${a.line2}`);
 
-        customPeriodCare = savedPeriodCare || [];  // 没有内置预设，用户没配置就是空数组
-
         if (savedMessages && Array.isArray(savedMessages)) {
             messages = savedMessages.map(m => ({
                 ...m, timestamp: new Date(m.timestamp)
@@ -524,9 +517,6 @@ const loadData = async () => {
                     ...m, timestamp: new Date(m.timestamp)
                 }));
                 if (backup.settings) Object.assign(settings, backup.settings);
-                if (backup.anniversaries && Array.isArray(backup.anniversaries)) {
-                    anniversaries = backup.anniversaries;
-                }
                 setTimeout(() => saveData(), 1000);
                 showNotification(
                     `已从备份恢复 ${messages.length} 条消息${backup._truncated ? '（备份为最近200条）' : ''}`,
@@ -547,7 +537,6 @@ const loadData = async () => {
         if (savedReplyGroups) window.customReplyGroups = savedReplyGroups;
         if (savedPokeGroups) window.customPokeGroups = savedPokeGroups;
         if (savedStatusGroups) window.customStatusGroups = savedStatusGroups;
-        if (savedAnniversaries) anniversaries = savedAnniversaries;
         if (savedStickers) stickerLibrary = savedStickers;
         if (savedMyStickers) myStickerLibrary = savedMyStickers;
         if (savedMyStickerGroups) window.myStickerGroups = savedMyStickerGroups;
@@ -694,7 +683,6 @@ const loadData = async () => {
             applyAllAvatarFrames();
             manageAutoSendTimer(); 
             checkEnvelopeStatus(); 
-            if (typeof checkMomentsStatus === 'function') checkMomentsStatus();
             updateUI();
             if (settings.customBubbleCss) {
                 try { applyCustomBubbleCss(settings.customBubbleCss); } catch(e) {}
@@ -724,14 +712,11 @@ const LIBRARY_CONFIG = {
             { id: 'pokes', name: '拍一拍', mode: 'list' },
             { id: 'statuses', name: '对方状态', mode: 'list' },
             { id: 'surveyBank', name: '问卷题库', mode: 'list' },
-            { id: 'period', name: '经期', mode: 'list' },
-            { id: 'redpacketBank', name: '红包祝福语', mode: 'list' },
             { id: 'mottos', name: '顶部格言', mode: 'list' },
             { id: 'intros', name: '开场动画', mode: 'list' }
         ]
     }
 };
-let currentAnnType = 'anniversary'; 
 
 window.openMyStickerSettings = function() {
     const picker = document.getElementById('user-sticker-picker');
@@ -747,35 +732,6 @@ window.openMyStickerSettings = function() {
     if (modal && typeof showModal === 'function') showModal(modal);
 };
 
-window.switchAnnType = function(type) {
-    currentAnnType = type;
-    currentAnniversaryType = type; 
-    document.querySelectorAll('.ann-type-btn').forEach(btn => {
-        if (btn.dataset.type === type) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    const desc = document.getElementById('ann-type-desc');
-    if(desc) {
-        desc.textContent = type === 'anniversary' 
-            ? '计算从过去某一天到现在已经过了多少天 (例如: 相识、恋爱)' 
-            : '计算从现在到未来某一天还剩下多少天 (例如: 生日、跨年)';
-    }
-};
-
-window.deleteAnniversaryItem = function(id) {
-    if(confirm("确定要删除这条记录吗？")) {
-        anniversaries = anniversaries.filter(a => a.id !== id);
-        throttledSaveData(); 
-        renderAnniversariesList();
-        showNotification('已删除', 'success');
-        if (typeof playSound === 'function') playSound('anniversary');
-    }
-};
-
 const _BACKUP_PREFIX = 'BACKUP_V1_';
 function _backupCriticalData() {
     if (window._skipBackup) return;
@@ -784,8 +740,7 @@ function _backupCriticalData() {
             ts: Date.now(),
             messages: messages,
             settings: settings,
-            sessionId: SESSION_ID,
-            anniversaries: anniversaries
+            sessionId: SESSION_ID
         };
 
         let payloadToStore = backupPayload;
@@ -840,12 +795,10 @@ const saveData = async () => {
         { key: 'customPokeGroups',        val: () => localforage.setItem(getStorageKey('customPokeGroups'), window.customPokeGroups || []) },
         { key: 'customStatusGroups',      val: () => localforage.setItem(getStorageKey('customStatusGroups'), window.customStatusGroups || []) },
         { key: 'customEmojis',           val: () => localforage.setItem(getStorageKey('customEmojis'), customEmojis) },
-        { key: 'anniversaries',          val: () => localforage.setItem(getStorageKey('anniversaries'), anniversaries) },
         { key: 'customPokes',            val: () => localforage.setItem(getStorageKey('customPokes'), customPokes) },
         { key: 'customStatuses',         val: () => localforage.setItem(getStorageKey('customStatuses'), customStatuses) },
         { key: 'customMottos',           val: () => localforage.setItem(getStorageKey('customMottos'), customMottos) },
         { key: 'customIntros',           val: () => localforage.setItem(getStorageKey('customIntros'), customIntros) },
-        { key: 'customPeriodCare',       val: () => localforage.setItem(getStorageKey('customPeriodCare'), customPeriodCare) },
         { key: 'stickerLibrary',         val: () => localforage.setItem(getStorageKey('stickerLibrary'), stickerLibrary) },
         { key: 'myStickerLibrary',       val: () => localforage.setItem(getStorageKey('myStickerLibrary'), myStickerLibrary) },
         { key: 'myStickerGroups',        val: () => localforage.setItem(getStorageKey('myStickerGroups'), window.myStickerGroups || []) },
@@ -1023,7 +976,7 @@ if (customIntros && customIntros.length > 0) {
         scrambleText(subEl, line2, 2000);
     }, 600);
 } else {
-    document.getElementById('welcome-title-glitch').textContent = "传讯";
+    document.getElementById('welcome-title-glitch').textContent = "Apple Hut";
     document.getElementById('welcome-subtitle-scramble').textContent = "请在设置中添加开场动画";
 }
 
@@ -1222,7 +1175,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         callEvDiv.dataset.id = msg.id;
         callEvDiv.dataset.msgId = msg.id; // 让"跳转到某条消息"能定位到搞怪/通话记录
         const icon = msg.callIcon || 'fa-video';
-        // 红色样式：通话拒绝/未接 + 陪伴拒绝/错过/取消
+        // 红色样式：通话拒绝/未接/取消
         const isRejected = icon === 'fa-phone-slash' ||
                            icon === 'fa-heart-crack' ||
                            icon === 'fa-circle-xmark';
@@ -1324,12 +1277,9 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
         messageHTML += `<div class="reply-indicator" data-reply-id="${msg.replyTo.id || ''}" style="cursor:pointer;" onclick="scrollToQuotedMessage(this)"><span class="reply-indicator-sender">${repliedSender}</span><span class="reply-indicator-text">${repliedText}</span></div>`;
     }
 
-    const isRedPacket = msg.type === 'redpacket';
     const isImageOnly = !msg.text && !!msg.image;
     let content = msg.text ? `<div>${msg.text.replace(/\n/g, '<br>')}</div>` : '';
-    if (isRedPacket) {
-        content = (window.RedPacket && typeof window.RedPacket.renderBubbleHTML === 'function') ? window.RedPacket.renderBubbleHTML(msg) : '';
-    } else if (msg.image) {
+    if (msg.image) {
         // 阶段三B：识别 oss:// 走懒加载；识别 pending:// 走本地 base64 + 上传中角标
         const isCloudImg = typeof msg.image === 'string' && msg.image.indexOf('oss://') === 0;
         const isPendingImg = typeof msg.image === 'string' && msg.image.indexOf('pending://') === 0;
@@ -1349,9 +1299,7 @@ function createMessageFragment(msg, prevMsg, nextMsg, lastSenderRef) {
     messageHTML += content;
 
     const messageDiv = document.createElement('div');
-    if (isRedPacket) {
-        messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} message-redpacket-bubble-wrap`;
-    } else if (isImageOnly) {
+    if (isImageOnly) {
         messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} message-image-bubble-none`;
     } else {
         messageDiv.className = `message message-${msg.sender === 'user' ? 'sent' : 'received'} ${settings.bubbleStyle}`;
@@ -1711,7 +1659,7 @@ function _recordRecentReaction(emoji) {
 }
 
 // 引用（回复）一条没有文字的消息时，引用条里显示的文案：
-// 红包 → [红包]；语音 → 语音 N"；表情包 → [表情]；真正的图片 → [图片]；其他（通话记录等）→ [消息]。
+// 语音 → 语音 N"；表情包 → [表情]；真正的图片 → [图片]；其他（通话记录等）→ [消息]。
 // 优先去聊天记录里按 id 找到原消息来判断（引用条里只存了 id/发送者/文字，没存类型）；找不到原消息再用引用条里带的字段。
 // 梦角发的图片只有表情包这一种来源；用户发的图片要看它是不是在"我的表情库"里，是就算表情包。
 window._quotePreviewLabel = function (q) {
@@ -1719,7 +1667,6 @@ window._quotePreviewLabel = function (q) {
     const orig = (typeof messages !== 'undefined' && Array.isArray(messages))
         ? (messages.find(function (m) { return String(m.id) === String(q.id); }) || q)
         : q;
-    if (orig.type === 'redpacket') return '[红包]';
     if (orig.voice) return '语音 ' + (orig.voice.duration || 0) + '"';
     if (orig.image) {
         // 新消息发出时带 isSticker 标记，最准；老消息没有标记，就按下面的规则判断
@@ -1773,7 +1720,7 @@ window.addReactionToMessage = function(messageId, emoji) {
     }
     // 撤回反应时不放效果，「新加上」一个反应（不管是用户手动点的还是梦角自动给的）才满屏飘——
     // 纯emoji会在气球/礼花/烟花里随机抽一种；颜文字固定只用气球（带毛玻璃胶囊底），不会抽到礼花/烟花
-    // 满屏飘的效果只在主聊天页播：用户在弹窗/情侣空间/陪伴页/电影院或页面在后台时跳过，
+    // 满屏飘的效果只在主聊天页播：用户在弹窗里或页面在后台时跳过，
     // 不然会盖在别的页面上面飘（标签小标签本身已经更新了，回到聊天页就能看到）
     const _awayFromChat = (typeof window._isAwayFromChat === 'function') ? window._isAwayFromChat() : false;
     if (!isRemoving && !_awayFromChat && typeof window.playReactionBurst === 'function') {
@@ -2062,9 +2009,6 @@ const addMessage = (message) => {
     if (message.sender === 'user') {
         if (msgViewMode === 'window') {
             throttledSaveData();
-            if (message.type === 'normal' && typeof window._onUserMessage === 'function') {
-                try { window._onUserMessage(message); } catch (e) { console.warn('[onUserMessage]', e); }
-            }
             if (typeof window._backToLatestMessages === 'function') window._backToLatestMessages();
             return;
         }
@@ -2108,9 +2052,6 @@ const addMessage = (message) => {
         if (typeof window._updateNewMsgIndicator === 'function') window._updateNewMsgIndicator();
         if (typeof window._updateBackToLatestBtn === 'function') window._updateBackToLatestBtn();
         throttledSaveData();
-        if (message.type === 'normal' && typeof window._onPartnerMessage === 'function') {
-            try { window._onPartnerMessage(message); } catch (e) { console.warn('[onPartnerMessage]', e); }
-        }
         if (message.type === 'normal' && Array.isArray(window._partnerMessageListeners)) {
             window._partnerMessageListeners.forEach(function (fn) {
                 try { fn(message); } catch (e) { console.warn('[onPartnerMessage:listener]', e); }
@@ -2159,21 +2100,12 @@ const addMessage = (message) => {
 
     throttledSaveData();
 
-    // 钩子：通知陪伴模块"梦角刚说了一句话"，让陪伴页可以同步显示气泡
+    // 钩子：通知外部模块"梦角刚说了一句话"（供消息横条等模块使用）
     // 只对梦角的普通消息触发（不是用户消息、不是 system call-event 等）
-    // 保留原有的单函数赋值方式（陪伴模块在用，不改动，避免影响它）
-    if (message.sender !== 'user' && message.type === 'normal' && typeof window._onPartnerMessage === 'function') {
-        try { window._onPartnerMessage(message); } catch (e) { console.warn('[onPartnerMessage]', e); }
-    }
-    // 新增：多监听通道，供电影院等新模块注册，跟上面那个单函数钩子并行、互不覆盖
     if (message.sender !== 'user' && message.type === 'normal' && Array.isArray(window._partnerMessageListeners)) {
         window._partnerMessageListeners.forEach(function (fn) {
             try { fn(message); } catch (e) { console.warn('[onPartnerMessage:listener]', e); }
         });
-    }
-    // 钩子：通知陪伴模块"用户刚发了一条消息"，让陪伴页气泡同步显示
-    if (message.sender === 'user' && message.type === 'normal' && typeof window._onUserMessage === 'function') {
-        try { window._onUserMessage(message); } catch (e) { console.warn('[onUserMessage]', e); }
     }
 };
 
@@ -2300,7 +2232,7 @@ const addMessage = (message) => {
             const _pokeMsgId = Date.now();
             addMessage({ id: _pokeMsgId, text: pokeText, timestamp: new Date(), type: 'system' });
             if (typeof playSound === 'function') playSound('partner_poke');
-            // 不在主聊天页（后台/弹窗/情侣空间……）时提示一下：后台弹系统通知，应用内弹横条
+            // 不在主聊天页（后台/弹窗……）时提示一下：后台弹系统通知，应用内弹横条
             if (typeof window._notifyPartnerEvent === 'function') window._notifyPartnerEvent('拍了拍你', _pokeMsgId);
             (function(){try{if(window._typingIndicatorAutoHideTimer){clearTimeout(window._typingIndicatorAutoHideTimer);window._typingIndicatorAutoHideTimer=null;}}catch(e){}var _tiW=document.getElementById('typing-indicator-wrapper');if(_tiW){var _tiInner=_tiW.querySelector('.typing-indicator');if(_tiInner){_tiInner.classList.add('hiding');setTimeout(function(){_tiW.style.display='none';if(_tiInner)_tiInner.classList.remove('hiding');},240);}else{_tiW.style.display='none';}}})();
         };
@@ -2520,14 +2452,10 @@ if (!isBatchMode && type === 'normal') {
         })();
 
         // 通用：触发"模拟用户发了消息后的延迟回复"机制
-        //   isUserMessage: true 表示真实有用户消息（默认），false 表示陪伴页点击触发（不存在的虚拟消息）
+        //   isUserMessage: true 表示真实有用户消息（默认），false 表示外部模拟触发（不存在的虚拟消息）
         //   返回 true 表示已排队等待回复，false 表示被"已读不回"概率拦截
         window._triggerDelayedReply = function(isUserMessage) {
             if (isBatchMode) return false;
-            // 真实用户消息一定要清除陪伴静默标志（避免陪伴中点了一下，回首页发消息时还跳过引用）
-            if (isUserMessage) {
-                window._companionSilentTrigger = false;
-            }
             const delayRange = settings.replyDelayMax - settings.replyDelayMin;
             const randomDelay = settings.replyDelayMin + Math.random() * delayRange;
 
@@ -2576,8 +2504,6 @@ if (!isBatchMode && type === 'normal') {
             window._pendingReplyTimer = setTimeout(() => {
                 window._pendingReplyTimer = null;
                 simulateReply();
-                // 清除陪伴静默标志：延迟清除，确保 simulateReply 内部所有消息都已取到 recentUserMsgs 之后再清
-                setTimeout(() => { window._companionSilentTrigger = false; }, (settings.replyDelayMax || 3000) + 500);
             }, randomDelay);
             return true;
         };
@@ -2643,16 +2569,6 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
             }
             if (_doPoke || _doThrow) return;
 
-            // ── 梦角主动发红包：跟上面拍一拍是完全独立的两套判定，互不影响——
-            // 不 return，不影响这次正常回复照常生成；异步调用，不 await，不拖慢/阻塞回复流程，
-            // 红包该不该发、发不发得出去，evaluatePartnerTrigger 内部自己算完自己存，
-            // 这里只是在梦角每次要生成回复之前，顺手多"戳"它判定一次
-            if (window.RedPacket && typeof window.RedPacket.evaluatePartnerTrigger === 'function') {
-                window.RedPacket.evaluatePartnerTrigger().catch(function (e) {
-                    console.warn('[红包] 判定过程出错，这次先跳过', e);
-                });
-            }
-
             const replyCount = Math.random() < 0.75 ? 1: (Math.random() < 0.95 ? 2: 3);
             if (!customReplies || customReplies.length === 0) {
                 showNotification('回复库为空，请先到「自定义回复」中添加内容', 'info', 3500);
@@ -2680,8 +2596,7 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
             // 确认有可用回复后再展示“正在输入中”，避免空转
             showTypingIndicator();
             let delay = 0;
-            // 陪伴页静默触发时不引用用户消息（陪伴中的触发不是用户发了某条具体消息）
-            const recentUserMsgs = (settings.replyEnabled && !window._companionSilentTrigger)
+            const recentUserMsgs = settings.replyEnabled
                 ? messages.filter(m => m.sender === 'user' && m.text).slice(-10)
                 : [];
 
@@ -2689,7 +2604,7 @@ if (partnerPersonas && partnerPersonas.length > 0 && Math.random() < 0.3) {
             //    跟引用回复、表情混入消息都是各自独立摇骰子，互不影响 ──
             const roundCandidateIds = (window._currentRoundMsgIds || []).slice();
             window._currentRoundMsgIds = []; // 这一轮即将被回复，清空计数，下一次发消息重新算一轮
-            if (settings.autoReactionEnabled !== false && !window._companionSilentTrigger && roundCandidateIds.length > 0 && Math.random() < 0.2) {
+            if (settings.autoReactionEnabled !== false && roundCandidateIds.length > 0 && Math.random() < 0.2) {
                 if (!customEmojis || customEmojis.length === 0) {
                     showNotification('自定义 Emoji 库为空，梦角暂时没法给消息加反应', 'info', 3000);
                 } else {
@@ -2920,19 +2835,15 @@ function showModal(modalElement, focusElement = null) {
         }
 
         async function exportChatHistory() {
-            // 直接从 localforage 读取日记（不依赖内存缓存，防止懒加载未就绪时为空）
-            let _diaryForExport = [];
             let _moodForExport = null;
             let _customMoodOptionsForExport = [];
             try {
                 const _allKeys = await localforage.keys();
-                const _diaryKey = _allKeys.find(k => k.includes('companionDiary') && !k.includes('Bg') && !k.includes('Gallery'));
-                if (_diaryKey) _diaryForExport = (await localforage.getItem(_diaryKey)) || [];
                 const _moodKey = _allKeys.find(k => k.includes('moodCalendar'));
                 if (_moodKey) _moodForExport = (await localforage.getItem(_moodKey)) || {};
                 const _moodOptsKey = _allKeys.find(k => k.includes('customMoodOptions'));
                 if (_moodOptsKey) _customMoodOptionsForExport = (await localforage.getItem(_moodOptsKey)) || [];
-            } catch(e) { _diaryForExport = []; _moodForExport = {}; }
+            } catch(e) { _moodForExport = {}; }
 
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;';
@@ -2959,19 +2870,9 @@ function showModal(modalElement, focusElement = null) {
                             <span>字卡回复库</span>
                         </label>
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);transition:border-color 0.2s;">
-                            <input type="checkbox" id="_exp_ann" style="accent-color:var(--accent-color);width:15px;height:15px;">
-                            <i class="fas fa-calendar-heart" style="color:var(--accent-color);width:16px;text-align:center;"></i>
-                            <span>纪念日 / 倒计时</span>
-                        </label>
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);transition:border-color 0.2s;">
                             <input type="checkbox" id="_exp_themes" style="accent-color:var(--accent-color);width:15px;height:15px;">
                             <i class="fas fa-palette" style="color:var(--accent-color);width:16px;text-align:center;"></i>
                             <span>自定义主题配色</span>
-                        </label>
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);transition:border-color 0.2s;">
-                            <input type="checkbox" id="_exp_diary" style="accent-color:var(--accent-color);width:15px;height:15px;">
-                            <i class="fas fa-book-open" style="color:var(--accent-color);width:16px;text-align:center;"></i>
-                            <span>陪伴日记 <span style="font-size:11px;color:var(--text-secondary);">(${_diaryForExport.length} 条)</span></span>
                         </label>
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);transition:border-color 0.2s;">
                             <input type="checkbox" id="_exp_mood" style="accent-color:var(--accent-color);width:15px;height:15px;">
@@ -2998,12 +2899,10 @@ function showModal(modalElement, focusElement = null) {
                 const inclMsgs     = !!document.getElementById('_exp_msgs')?.checked;
                 const inclSettings = !!document.getElementById('_exp_settings')?.checked;
                 const inclReplies  = !!document.getElementById('_exp_replies')?.checked;
-                const inclAnn      = !!document.getElementById('_exp_ann')?.checked;
                 const inclThemes   = !!document.getElementById('_exp_themes')?.checked;
-                const inclDiary    = !!document.getElementById('_exp_diary')?.checked;
                 const inclMood     = !!document.getElementById('_exp_mood')?.checked;
 
-                if (!inclMsgs && !inclSettings && !inclReplies && !inclAnn && !inclThemes && !inclDiary && !inclMood) {
+                if (!inclMsgs && !inclSettings && !inclReplies && !inclThemes && !inclMood) {
                     showNotification('请至少选择一项导出内容', 'error');
                     return;
                 }
@@ -3025,7 +2924,7 @@ function showModal(modalElement, focusElement = null) {
 
                     const exportObj = {
                         version: '3.1',
-                        appName: 'ChatApp',
+                        appName: 'Apple Hut',
                         exportDate: new Date().toISOString(),
                         exportModules: []
                     };
@@ -3051,20 +2950,14 @@ function showModal(modalElement, focusElement = null) {
                         if (customStatuses && customStatuses.length > 0) exportObj.customStatuses = customStatuses;
                         if (customMottos && customMottos.length > 0) exportObj.customMottos = customMottos;
                         if (customIntros && customIntros.length > 0) exportObj.customIntros = customIntros;
-                        if (customPeriodCare && customPeriodCare.length > 0) exportObj.customPeriodCare = customPeriodCare;
                         if (window.customReplyGroups && window.customReplyGroups.length > 0) exportObj.customReplyGroups = window.customReplyGroups;
                         if (window.customPokeGroups && window.customPokeGroups.length > 0) exportObj.customPokeGroups = window.customPokeGroups;
                         if (window.customStatusGroups && window.customStatusGroups.length > 0) exportObj.customStatusGroups = window.customStatusGroups;
                         exportObj.exportModules.push('customReplies');
                     }
-                    if (inclAnn)      { exportObj.anniversaries = anniversaries; exportObj.exportModules.push('anniversaries'); }
                     if (inclThemes)   {
                         exportObj.customThemes = customThemes;
                         exportObj.exportModules.push('themes');
-                    }
-                    if (inclDiary) {
-                        exportObj.companionDiary = _diaryForExport;
-                        exportObj.exportModules.push('companionDiary');
                     }
                     if (inclMood && _moodForExport && Object.keys(_moodForExport).length > 0) {
                         exportObj.moodCalendar = _moodForExport;
@@ -3080,7 +2973,7 @@ function showModal(modalElement, focusElement = null) {
                         const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
                         const file = new File([blob], fileName, { type: 'application/json' });
                         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share({ files: [file], title: '传讯数据导出', text: `导出日期：${new Date().toLocaleDateString()}` })
+                            navigator.share({ files: [file], title: 'Apple Hut 数据导出', text: `导出日期：${new Date().toLocaleDateString()}` })
                                 .catch(() => fallbackExport(dataStr, fileName));
                             return;
                         }
@@ -3154,7 +3047,7 @@ function showModal(modalElement, focusElement = null) {
 
                         const converted = {
                             version: importedData.version || '3.1',
-                            appName:  importedData.appName || 'ChatApp',
+                            appName:  importedData.appName || 'Apple Hut',
                             exportDate: importedData.exportDate || importedData.timestamp || new Date().toISOString(),
                             exportModules: []
                         };
@@ -3184,9 +3077,6 @@ function showModal(modalElement, focusElement = null) {
                         const emojis = parseVal(getVal('customEmojis'));
                         if (Array.isArray(emojis)) converted.customEmojis = emojis;
 
-                        const ann = parseVal(getVal('anniversaries'));
-                        if (Array.isArray(ann)) { converted.anniversaries = ann; converted.exportModules.push('anniversaries'); }
-
                         const themes = parseVal(allKv[appPfx + 'customThemes'] !== undefined ? allKv[appPfx + 'customThemes'] : (ls[appPfx + 'customThemes'] || null));
                         if (themes) { converted.customThemes = themes; converted.exportModules.push('themes'); }
 
@@ -3196,12 +3086,10 @@ function showModal(modalElement, focusElement = null) {
                     const hasMessages  = importedData.messages && Array.isArray(importedData.messages);
                     const hasSettings  = !!importedData.settings;
                     const hasReplies   = importedData.customReplies && Array.isArray(importedData.customReplies);
-                    const hasAnn       = importedData.anniversaries && Array.isArray(importedData.anniversaries);
                     const hasThemes    = !!importedData.customThemes || !!importedData.stickerLibrary;
-                    const hasDiary     = importedData.companionDiary && Array.isArray(importedData.companionDiary);
                     const hasMood      = !!importedData.moodCalendar && typeof importedData.moodCalendar === 'object';
 
-                    if (!hasMessages && !hasSettings && !hasReplies && !hasAnn && !hasThemes && !hasDiary && !hasMood) {
+                    if (!hasMessages && !hasSettings && !hasReplies && !hasThemes && !hasMood) {
                         throw new Error('无效的聊天记录文件（未检测到可识别的数据模块）');
                     }
 
@@ -3227,9 +3115,7 @@ function showModal(modalElement, focusElement = null) {
                                 ${makeRow('_imp_msgs', 'fas fa-comments', '聊天记录', hasMessages ? `(${importedData.messages.length} 条)` : '', hasMessages, true)}
                                 ${makeRow('_imp_settings', 'fas fa-sliders-h', '外观与聊天设置', '', hasSettings, true)}
                                 ${makeRow('_imp_replies', 'fas fa-reply', '字卡回复库', '', hasReplies, false)}
-                                ${makeRow('_imp_ann', 'fas fa-calendar-heart', '纪念日 / 倒计时', '', hasAnn, false)}
                                 ${makeRow('_imp_themes', 'fas fa-palette', '自定义主题配色', '', hasThemes, false)}
-                                ${makeRow('_imp_diary', 'fas fa-book-open', '陪伴日记', hasDiary ? `(${importedData.companionDiary.length} 条)` : '', hasDiary, false)}
                                 ${makeRow('_imp_mood', 'fas fa-face-smile', '心情手账', hasMood ? `(${Object.keys(importedData.moodCalendar).length} 天)` : '', hasMood, false)}
                             </div>
                             <div style="display:flex;gap:10px;">
@@ -3251,12 +3137,10 @@ function showModal(modalElement, focusElement = null) {
                         const doMsgs     = hasMessages  && !!document.getElementById('_imp_msgs')?.checked;
                         const doSettings = hasSettings  && !!document.getElementById('_imp_settings')?.checked;
                         const doReplies  = hasReplies   && !!document.getElementById('_imp_replies')?.checked;
-                        const doAnn      = hasAnn       && !!document.getElementById('_imp_ann')?.checked;
                         const doThemes   = hasThemes    && !!document.getElementById('_imp_themes')?.checked;
-                        const doDiary    = hasDiary     && !!document.getElementById('_imp_diary')?.checked;
                         const doMood     = hasMood      && !!document.getElementById('_imp_mood')?.checked;
 
-                        if (!doMsgs && !doSettings && !doReplies && !doAnn && !doThemes && !doDiary && !doMood) {
+                        if (!doMsgs && !doSettings && !doReplies && !doThemes && !doMood) {
                             showNotification('请至少选择一项导入内容', 'error');
                             return;
                         }
@@ -3285,17 +3169,12 @@ function showModal(modalElement, focusElement = null) {
                         if (doReplies  && importedData.customPokes && Array.isArray(importedData.customPokes)) customPokes = importedData.customPokes;
                         if (doReplies  && importedData.customStatuses && Array.isArray(importedData.customStatuses)) customStatuses = importedData.customStatuses;
                         if (doReplies  && importedData.customMottos && Array.isArray(importedData.customMottos)) customMottos = importedData.customMottos;
-                        if (doReplies  && importedData.customPeriodCare && Array.isArray(importedData.customPeriodCare)) customPeriodCare = importedData.customPeriodCare;
                         if (doReplies  && importedData.customIntros && Array.isArray(importedData.customIntros)) customIntros = importedData.customIntros;
                         if (doReplies  && importedData.customReplyGroups) window.customReplyGroups = importedData.customReplyGroups;
                         if (doReplies  && importedData.customPokeGroups) window.customPokeGroups = importedData.customPokeGroups;
                         if (doReplies  && importedData.customStatusGroups) window.customStatusGroups = importedData.customStatusGroups;
-                        if (doAnn      && importedData.anniversaries)   anniversaries  = importedData.anniversaries;
                         if (doThemes   && importedData.customThemes)    customThemes   = importedData.customThemes;
                         if (doThemes   && importedData.stickerLibrary)  stickerLibrary = importedData.stickerLibrary;
-                        if (doDiary    && importedData.companionDiary && typeof window._setCompanionDiaryEntries === 'function') {
-                            window._setCompanionDiaryEntries(importedData.companionDiary);
-                        }
                         if (doMood && importedData.moodCalendar && typeof window._setMoodData === 'function') {
                             window._setMoodData(importedData.moodCalendar, importedData.customMoodOptions || []);
                         }

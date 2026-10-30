@@ -1,6 +1,6 @@
 /* ── 全局新消息推送横条（微信风格）──────────────────────────
    在主聊天以外的页面收到梦角新消息时弹出。
-   主聊天本身、陪伴模式、电影院沉浸模式不弹（逻辑在 js/features/global-msg-banner.js 里判断）*/
+   主聊天本身不弹（逻辑在 js/features/global-msg-banner.js 里判断）*/
 .gmb-banner {
     position: fixed;
     top: max(12px, env(safe-area-inset-top, 12px));

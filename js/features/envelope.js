@@ -67,10 +67,10 @@ async function checkEnvelopeStatus() {
         if (typeof renderEnvelopeLists === 'function') { try { renderEnvelopeLists(); } catch(e) {} }
     }
 
-    // 梦角主动来信检查已移至 moments.js 的共享触发器（_checkPartnerInitiatedAction）
+    // 梦角主动来信检查由共享触发器统一调度（_checkPartnerInitiatedAction）
 }
 
-// 生成梦角主动来信（由 moments.js 的共享触发器调用，不含冷却逻辑）
+// 生成梦角主动来信（由共享触发器调用，不含冷却逻辑）
 window._generatePartnerLetter = function() {
     // 字卡池是空的（一条有效字卡都没有），生成不出正常内容，会拼出一堆undefined——
     // 这种情况下直接不发这封信，等用户配好字卡之后自然会恢复正常
@@ -122,7 +122,7 @@ function showEnvelopeReplyPopup(letter) {
 const APPEARANCE_PANEL_TITLES = {
     'theme': '主题配色', 'font': '字体设置', 'background': '聊天背景',
     'bubble': '气泡样式', 'avatar': '聊天头像', 'css': '自定义CSS',
-    'font-bg': '背景 & 陪伴', 'bubble-css': '字体 & 气泡'
+    'font-bg': '背景', 'bubble-css': '字体 & 气泡'
 };
 window.showAppearancePanel = function(panel) {
     const panelMap = {
@@ -147,10 +147,6 @@ window.showAppearancePanel = function(panel) {
         if (target) target.style.display = 'block';
     }
     if (panel === 'bubble' || panel === 'bubble-css') { setTimeout(() => { if (typeof window.updateBubblePreviewFn === 'function') window.updateBubblePreviewFn(); }, 50); }
-    // 打开「背景 & 陪伴」时刷新日记背景画廊
-    if (panel === 'font-bg' || panel === 'background') {
-        setTimeout(() => { if (typeof window.renderDiaryBgGallery === 'function') window.renderDiaryBgGallery(); }, 50);
-    }
 };
 window.hideAppearancePanel = function() {
     document.getElementById('appearance-nav-grid').style.display = 'grid';
