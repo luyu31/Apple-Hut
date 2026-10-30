@@ -29,7 +29,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
-        android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+        android:theme="@style/Theme.AppleHat"
         android:hardwareAccelerated="true"
         android:largeHeap="true">
 

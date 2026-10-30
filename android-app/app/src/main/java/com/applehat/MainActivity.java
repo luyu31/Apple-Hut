@@ -9,9 +9,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.OpenableColumns;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -33,7 +36,33 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST_CODE = 2001;
     private static final int CAMERA_CAPTURE_REQUEST_CODE = 2002;
 
+    // 启动封面最短停留时间
+    private static final long SPLASH_MIN_MS = 1200L;
+
     private WebView mWebView;
+    private FrameLayout mRoot;
+    private View mSplashView;
+    private long mSplashStart;
+    private boolean mSplashHidden;
+
+    private final Runnable mHideSplash = new Runnable() {
+        @Override
+        public void run() {
+            if (mSplashView == null || mSplashHidden) return;
+            long elapsed = SystemClock.uptimeMillis() - mSplashStart;
+            if (elapsed < SPLASH_MIN_MS) {
+                mRoot.postDelayed(this, SPLASH_MIN_MS - elapsed);
+                return;
+            }
+            mSplashHidden = true;
+            mSplashView.animate().alpha(0f).setDuration(280).withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                    if (mSplashView != null) mSplashView.setVisibility(View.GONE);
+                }
+            });
+        }
+    };
 
     // 文件选择器状态（Android 5.0+）
     private ValueCallback<Uri[]> mFilePathCallback;
@@ -55,7 +84,22 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         mWebView = new WebView(this);
-        setContentView(mWebView);
+
+        mRoot = new FrameLayout(this);
+        mRoot.addView(mWebView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+
+        // 启动封面：与应用图标同款的像素苹果
+        mSplashView = getLayoutInflater().inflate(R.layout.splash_cover, mRoot, false);
+        mRoot.addView(mSplashView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        mSplashStart = SystemClock.uptimeMillis();
+        // 兜底：页面加载失败时也会收起封面
+        mRoot.postDelayed(mHideSplash, SPLASH_MIN_MS + 800L);
+
+        setContentView(mRoot);
 
         // WebView 背景透明 → 露出 Manifest 设置的白底
         mWebView.setBackgroundColor(0xFFFFFFFF);
@@ -89,6 +133,13 @@ public class MainActivity extends Activity {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (mRoot == null) return;
+                long remain = SPLASH_MIN_MS - (SystemClock.uptimeMillis() - mSplashStart);
+                mRoot.postDelayed(mHideSplash, Math.max(0L, remain));
             }
         });
 
@@ -269,6 +320,12 @@ public class MainActivity extends Activity {
             mOldFilePathCallback.onReceiveValue(null);
             mOldFilePathCallback = null;
         }
+
+        if (mRoot != null) {
+            mRoot.removeCallbacks(mHideSplash);
+            mRoot = null;
+        }
+        mSplashView = null;
 
         if (mWebView != null) {
             mWebView.stopLoading();
