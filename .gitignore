@@ -33,6 +33,7 @@ Thumbs.db
 *.swo
 
 # ===== 签名（永远不要提交）=====
+keystore.properties
 *.keystore
 *.jks
 *.p12

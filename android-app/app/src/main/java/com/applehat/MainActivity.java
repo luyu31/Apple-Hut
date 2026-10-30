@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -240,40 +239,13 @@ public class MainActivity extends Activity {
     }
 
     private void requestRuntimePermissions() {
-        if (Build.VERSION.SDK_INT < 23) return;
+        if (Build.VERSION.SDK_INT < 33) return;
 
-        List<String> needed = new ArrayList<>();
-        if (Build.VERSION.SDK_INT >= 33) {
-            needed.addAll(Arrays.asList(
-                    Manifest.permission.POST_NOTIFICATIONS,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    Manifest.permission.READ_MEDIA_AUDIO,
-                    Manifest.permission.READ_MEDIA_VIDEO
-            ));
-        } else if (Build.VERSION.SDK_INT >= 30) {
-            needed.addAll(Arrays.asList(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO
-            ));
-        } else {
-            needed.addAll(Arrays.asList(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ));
-        }
-
-        List<String> pending = new ArrayList<>();
-        for (String p : needed) {
-            if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
-                pending.add(p);
-            }
-        }
-        if (!pending.isEmpty()) {
-            requestPermissions(pending.toArray(new String[0]), PERMISSION_REQUEST_CODE);
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    PERMISSION_REQUEST_CODE);
         }
     }
 
